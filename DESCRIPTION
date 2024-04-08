@@ -1,0 +1,18 @@
+Package: TSJM
+Type: Package
+Title: Parameter Estimation and Dynamic Prediction in Joint Models of Multiple Longitudinal Measures and Time-to-Event Outcome
+Version: 0.1.0
+Authors@R: c(
+  person("Taban", "Baghfalaki", email = "t.baghfalaki@gmail.com", role =c("cre","aut")),
+  person("Helene", "Jaqmin-Gadda", email = "helene.jacqmin-gadda@u-bordeaux.fr", role = "aut"),
+  person("Reza", "Hashemi", email = "r.hashemi@razi.ac.ir", role = "aut"))
+Maintainer: Taban Baghfalaki <t.baghfalaki@gmail.com>
+Description: A two-stage strategy is employed to jointly model multiple longitudinal measures and time-to-event outcomes. The initial stage entails estimating K one-marker joint models for each marker. In the subsequent stage, time-varying covariates are integrated into a proportional hazard model for parameter estimation. Both phases adhere to the Bayesian paradigm. Furthermore, this approach enables the computation of dynamic predictions based on the estimated parameter values.
+License: GPL (>= 2.0)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.0
+Imports: stats, jagsUI, statmod, survival, nnet, arules, parallelsugar
+Depends: R (>= 4.0.0)
+SystemRequirements: JAGS 4.x.y
+
