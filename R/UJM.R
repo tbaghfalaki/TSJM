@@ -1,10 +1,10 @@
 #' One-marker Joint Modeling
 #'
 #' @description
-#' Fits Bayesian linear or quadratic one-marker joint modeling of longitudinal measurements and competing risks using MCMC
+#' Fits Bayesian linear or quadratic one-marker joint modeling of longitudinal measurements and survival outcome using MCMC
 #'
 #' @details
-#' Use the 'JAGS' software to estimate Bayesian linear or quadratic one-marker joint modeling of longitudinal measurements and competing risks using MCMC
+#' Use the 'JAGS' software to estimate Bayesian linear or quadratic one-marker joint modeling of longitudinal measurements and survival outcome using MCMC
 #'
 #' @param formFixed formula for fixed part of longitudinal model
 #' @param formRandom formula for random part of longitudinal model
@@ -70,7 +70,7 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     n <- length(id)
     tmp <- dataSurv[all.vars(formSurv)]
     Time <- tmp[all.vars(formSurv)][, 1] # matrix of observed time such as Time=min(Tevent,Tcens)
-    CR <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
+    Death <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
     nTime <- length(Time) # number of subject having Time
     # design matrice
     suppressWarnings({
@@ -106,36 +106,36 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }}
   for(k in 1:n2){
     linearpred[k]<-betaL[1]+b[k]+(betaL[indtime])*Time[k]
-    for(l in 1:C){
-    Alpha0[k,l]<- inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(betaL[1]+b[k])
+
+    Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(betaL[1]+b[k])
 
 
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime])
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k])
+    Alpha1[k]<- gamma1*(betaL[indtime])
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k])
 
 
     for(j in 1:K){
       # Scaling Gauss-Kronrod/Legendre quadrature
 
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                      (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                      (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                      (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                      (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j])
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                      (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                      (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                      (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                      (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j])
 
     }
 
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
 
     phi[k]<-KK+sum(phi1[k,])
@@ -151,20 +151,18 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-    betaS[l,k]~dnorm(0,0.001)
-    }}
+    betaS[k]~dnorm(0,0.001)
+    }
 
 
   for(j in 1:J){
-    for(l in 1:C){
 
-    h[j,l]~dgamma(0.1,0.1)
-  }}
-
-  for(l in 1:C){
-  gamma1[l]~dnorm(0,0.001)
+    h[j]~dgamma(0.1,0.1)
   }
+
+
+  gamma1~dnorm(0,0.001)
+
   Omega~dgamma(0.01,0.01)
   #Derive dquantity
   Sigma<-1/Omega
@@ -189,36 +187,36 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }}
   for(k in 1:n2){
     linearpred[k]<-inprod(betaL[nindtime],Xv[k,])+b[k]+(betaL[indtime])*Time[k]
-    for(l in 1:C){
-    Alpha0[k,l]<- inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(inprod(betaL[nindtime],Xv[k,])+b[k])
+
+    Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(inprod(betaL[nindtime],Xv[k,])+b[k])
 
 
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime])
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k])
+    Alpha1[k]<- gamma1*(betaL[indtime])
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k])
 
 
     for(j in 1:K){
       # Scaling Gauss-Kronrod/Legendre quadrature
 
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                      (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                      (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                      (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                      (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j])
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                      (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                      (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                      (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                      (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j])
 
     }
 
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
 
     phi[k]<-KK+sum(phi1[k,])
@@ -234,20 +232,17 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-    betaS[l,k]~dnorm(0,0.001)
-    }}
+    betaS[k]~dnorm(0,0.001)
+    }
 
 
   for(j in 1:J){
-    for(l in 1:C){
-
-    h[j,l]~dgamma(0.1,0.1)
-  }}
-
-  for(l in 1:C){
-  gamma1[l]~dnorm(0,0.001)
+    h[j]~dgamma(0.1,0.1)
   }
+
+
+  gamma1~dnorm(0,0.001)
+
   Omega~dgamma(0.01,0.01)
   #Derive dquantity
   Sigma<-1/Omega
@@ -467,36 +462,36 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }}
   for(k in 1:n2){
     linearpred[k]<-betaL[1]+b[k,1]+(betaL[indtime]+b[k,2])*Time[k]
-    for(l in 1:C){
-    Alpha0[k,l]<- inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(betaL[1]+b[k,1])
+
+    Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(betaL[1]+b[k,1])
 
 
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime]+b[k,2])
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k])
+    Alpha1[k]<- gamma1*(betaL[indtime]+b[k,2])
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k])
 
 
     for(j in 1:K){
       # Scaling Gauss-Kronrod/Legendre quadrature
 
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                      (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                      (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                      (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                      (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j])
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                      (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                      (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                      (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                      (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j])
 
     }
 
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
 
     phi[k]<-KK+sum(phi1[k,])
@@ -512,20 +507,16 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-    betaS[l,k]~dnorm(0,0.001)
-    }}
+    betaS[k]~dnorm(0,0.001)
+    }
 
 
   for(j in 1:J){
-    for(l in 1:C){
-
-    h[j,l]~dgamma(0.1,0.1)
-  }}
-
-  for(l in 1:C){
-  gamma1[l]~dnorm(0,0.001)
+    h[j]~dgamma(0.1,0.1)
   }
+
+  gamma1~dnorm(0,0.001)
+
   Omega[1:Nb,1:Nb]~dwish(V[,],Nb)
   #Derive dquantity
   Sigma[1:Nb,1:Nb]<-inverse(Omega[,])
@@ -550,36 +541,35 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }}
   for(k in 1:n2){
     linearpred[k]<-inprod(betaL[nindtime],Xv[k,])+b[k,1]+(betaL[indtime]+b[k,2])*Time[k]
-    for(l in 1:C){
-    Alpha0[k,l]<- inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(inprod(betaL[nindtime],Xv[k,])+b[k,1])
+    Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(inprod(betaL[nindtime],Xv[k,])+b[k,1])
 
 
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime]+b[k,2])
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k])
+    Alpha1[k]<- gamma1*(betaL[indtime]+b[k,2])
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k])
 
 
     for(j in 1:K){
       # Scaling Gauss-Kronrod/Legendre quadrature
 
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                      (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                      (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                      (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                      (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j])
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                      (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                      (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                      (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                      (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j])
 
     }
 
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
 
     phi[k]<-KK+sum(phi1[k,])
@@ -595,20 +585,17 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-    betaS[l,k]~dnorm(0,0.001)
-    }}
+    betaS[k]~dnorm(0,0.001)
+    }
 
 
   for(j in 1:J){
-    for(l in 1:C){
-
-    h[j,l]~dgamma(0.1,0.1)
-  }}
-
-  for(l in 1:C){
-  gamma1[l]~dnorm(0,0.001)
+    h[j]~dgamma(0.1,0.1)
   }
+
+
+  gamma1~dnorm(0,0.001)
+
   Omega[1:Nb,1:Nb]~dwish(V[,],Nb)
   #Derive dquantity
   Sigma[1:Nb,1:Nb]<-inverse(Omega[,])
@@ -850,34 +837,33 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     linearpred[k]<-betaL[1]+b[k,1]+(betaL[indtime[1]]+b[k,2])*Time[k]+
       (betaL[indtime[2]]+b[k,3])*pow(Time[k],2)
 
-    for(l in 1:C){
 
-    Alpha0[k,l]<-  inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(betaL[1]+b[k,1])
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime[1]]+b[k,2])
-    Alpha2[k,l]<- gamma1[l]*(betaL[indtime[2]]+b[k,3])
+    Alpha0[k]<-  inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(betaL[1]+b[k,1])
+    Alpha1[k]<- gamma1*(betaL[indtime[1]]+b[k,2])
+    Alpha2[k]<- gamma1*(betaL[indtime[2]]+b[k,3])
 
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                  (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                  (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                  (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                  (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k]+Alpha2[k,l]*pow(Time[k],2))
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                  (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                  (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                  (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                  (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k]+Alpha2[k]*pow(Time[k],2))
 
 
     for(j in 1:K){
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                        (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                        (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                        (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                        (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j]+Alpha2[k,l]*pow(xk11[k,j],2))
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                        (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                        (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                        (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                        (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j]+Alpha2[k]*pow(xk11[k,j],2))
 
         }
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
     phi[k]<-KK+sum(phi1[k,])
     zeros[k]~dpois(phi[k])
@@ -891,18 +877,14 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-      betaS[l,k]~dnorm(0,0.001)
-    }}
+      betaS[k]~dnorm(0,0.001)
+    }
 
   for(j in 1:J){
-    for(l in 1:C){
-      h[j,l]~dgamma(0.1,0.1)
-    }}
+      h[j]~dgamma(0.1,0.1)
+    }
 
-  for(l in 1:C){
-    gamma1[l]~dnorm(0,0.001)
-  }
+    gamma1~dnorm(0,0.001)
   Omega[1:Nb,1:Nb]~dwish(V[,],Nb)
   #Derive dquantity
   Sigma[1:Nb,1:Nb]<-inverse(Omega[,])
@@ -931,34 +913,33 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     linearpred[k]<-inprod(betaL[nindtime],Xv[k,])+b[k,1]+(betaL[indtime[1]]+b[k,2])*Time[k]+
       (betaL[indtime[2]]+b[k,3])*pow(Time[k],2)
 
-    for(l in 1:C){
 
-    Alpha0[k,l]<-  inprod(betaS[l,1:NbetasS],XS[k,1:NbetasS])+
-                 gamma1[l]*(inprod(betaL[nindtime],Xv[k,])+b[k,1])
-    Alpha1[k,l]<- gamma1[l]*(betaL[indtime[1]]+b[k,2])
-    Alpha2[k,l]<- gamma1[l]*(betaL[indtime[2]]+b[k,3])
+    Alpha0[k]<-  inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
+                 gamma1*(inprod(betaL[nindtime],Xv[k,])+b[k,1])
+    Alpha1[k]<- gamma1*(betaL[indtime[1]]+b[k,2])
+    Alpha2[k]<- gamma1*(betaL[indtime[2]]+b[k,3])
 
-    haz[k,l]<- ((h[1,l]*step(s[1]-Time[k]))+
-                  (h[2,l]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
-                  (h[3,l]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
-                  (h[4,l]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
-                  (h[5,l]*step(Time[k]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*Time[k]+Alpha2[k,l]*pow(Time[k],2))
+    haz[k]<- ((h[1]*step(s[1]-Time[k]))+
+                  (h[2]*step(Time[k]-s[1])*step(s[2]-Time[k]))+
+                  (h[3]*step(Time[k]-s[2])*step(s[3]-Time[k]))+
+                  (h[4]*step(Time[k]-s[3])*step(s[4]-Time[k]))+
+                  (h[5]*step(Time[k]-s[4])))*exp(Alpha0[k]+Alpha1[k]*Time[k]+Alpha2[k]*pow(Time[k],2))
 
 
     for(j in 1:K){
       #  Hazard function at Gauss-Kronrod/Legendre nodes
-      chaz[k,j,l]<-  ((h[1,l]*step(s[1]-xk11[k,j]))+
-                        (h[2,l]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
-                        (h[3,l]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
-                        (h[4,l]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
-                        (h[5,l]*step(xk11[k,j]-s[4])))*exp(Alpha0[k,l]+Alpha1[k,l]*xk11[k,j]+Alpha2[k,l]*pow(xk11[k,j],2))
+      chaz[k,j]<-  ((h[1]*step(s[1]-xk11[k,j]))+
+                        (h[2]*step(xk11[k,j]-s[1])*step(s[2]-xk11[k,j]))+
+                        (h[3]*step(xk11[k,j]-s[2])*step(s[3]-xk11[k,j]))+
+                        (h[4]*step(xk11[k,j]-s[3])*step(s[4]-xk11[k,j]))+
+                        (h[5]*step(xk11[k,j]-s[4])))*exp(Alpha0[k]+Alpha1[k]*xk11[k,j]+Alpha2[k]*pow(xk11[k,j],2))
 
         }
 
-    logSurv[k,l]<- -inprod(wk11[k,],chaz[k,,l])
-    phi1[k,l]<--equals(CR[k],l)*log(haz[k,l])-logSurv[k,l]
+    logSurv[k]<- -inprod(wk11[k,],chaz[k,])
+    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
 
-    }
+
     #Definition of the survival log-likelihood using zeros trick
     phi[k]<-KK+sum(phi1[k,])
     zeros[k]~dpois(phi[k])
@@ -972,18 +953,15 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
 
   for(k in 1:NbetasS){
-    for(l in 1:C){
-      betaS[l,k]~dnorm(0,0.001)
-    }}
+      betaS[k]~dnorm(0,0.001)
+    }
 
   for(j in 1:J){
-    for(l in 1:C){
-      h[j,l]~dgamma(0.1,0.1)
-    }}
+      h[j]~dgamma(0.1,0.1)
+    }
 
-  for(l in 1:C){
-    gamma1[l]~dnorm(0,0.001)
-  }
+    gamma1~dnorm(0,0.001)
+
   Omega[1:Nb,1:Nb]~dwish(V[,],Nb)
   #Derive dquantity
   Sigma[1:Nb,1:Nb]<-inverse(Omega[,])
