@@ -3,13 +3,13 @@ Employing a two-stage strategy for variable selection in joint modeling of multi
 
 
 ### Installation
-To acquire the latest development version of VSJM, you may utilize the following code snippet to install it directly from GitHub:
+To acquire the latest development version of TSJM, you may utilize the following code snippet to install it directly from GitHub:
 
 ```
   # install.packages("devtools")
-  devtools::install_github("tbaghfalaki/VSJM")
+  devtools::install_github("tbaghfalaki/TSJM")
 ```
-This will seamlessly fetch and install the most up-to-date version of VSJM for your use.
+This will seamlessly fetch and install the most up-to-date version of TSJM for your use.
 
 ### Reference 
 Baghfalaki, T., Hashemi, R. & Jacqmin-Gadda, H. (2024). A Two-stage Approach for Variable Selection in Joint Modeling of Multiple Longitudinal Markers and Competing Risk Outcomes. 
