@@ -23,7 +23,6 @@
 #' @param quiet Logical, whether to suppress stdout in jags.model().
 #'
 #'
-#'
 #' @importFrom stats quantile rnorm model.frame model.matrix
 #'
 #' @return
@@ -98,13 +97,13 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   }
   #Survival and censoring times
   #Hazard function
+
   for(k in 1:n2){
   for(j in 1:K){
     # Scaling Gauss-Kronrod/Legendre quadrature
     xk11[k,j]<-(xk[j]+1)/2*Time[k]
     wk11[k,j]<- wk[j]*Time[k]/2
-  }}
-  for(k in 1:n2){
+  }
     linearpred[k]<-betaL[1]+b[k]+(betaL[indtime])*Time[k]
 
     Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
@@ -133,13 +132,8 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
-
-
+  phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
     #Definition of the survival log-likelihood using zeros trick
-
-    phi[k]<-KK+sum(phi1[k,])
-
     zeros[k]~dpois(phi[k])
     #Random effects
     b[k]~dnorm(0,Omega)
@@ -184,8 +178,7 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     # Scaling Gauss-Kronrod/Legendre quadrature
     xk11[k,j]<-(xk[j]+1)/2*Time[k]
     wk11[k,j]<- wk[j]*Time[k]/2
-  }}
-  for(k in 1:n2){
+  }
     linearpred[k]<-inprod(betaL[nindtime],Xv[k,])+b[k]+(betaL[indtime])*Time[k]
 
     Alpha0[k]<- inprod(betaS[1:NbetasS],XS[k,1:NbetasS])+
@@ -214,13 +207,10 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
+    phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
 
 
     #Definition of the survival log-likelihood using zeros trick
-
-    phi[k]<-KK+sum(phi1[k,])
-
     zeros[k]~dpois(phi[k])
     #Random effects
     b[k]~dnorm(0,Omega)
@@ -253,10 +243,10 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
 
-    C <- length(unique(CR)) - 1
+
     i.jags <- function() {
       list(
-        gamma1 = stats::rnorm(C),
+        gamma1 = stats::rnorm(1),
         betaL = stats::rnorm(dim(X)[2]), tau1 = 1, Omega = 1, b = rep(0, n2)
       )
     }
@@ -266,17 +256,19 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
       "gamma1", "sigma1", "Sigma", "h"
     )
     ###############################
+    NbetasS= dim(XS)[2]
+    if(is.vector(NbetasS)==FALSE)(NbetasS=1)
     d.jags1 <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS =NbetasS ,
       X = X, id = id2, indtime = indtime,
-      CR = CR, zeros = rep(0, n2),
+      Death =Death, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
 
     d.jags <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = NbetasS,
       X = X, id = id2, Xv = Xv, indtime = indtime, nindtime = c(1:dim(X)[2])[-indtime],
-      CR = CR, zeros = rep(0, n2),
+      Death =Death, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
     if (is.matrix(Xv) == FALSE) {
@@ -354,8 +346,6 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
       colnames(LM) <- c("Est", "SD", "L_CI", "U_CI", "Rhat")
 
-
-
       results <- list(Longitudinal_model = LM)
     } else {
       names(sim1$mean$betaL) <-
@@ -425,7 +415,7 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
     tmp <- dataSurv[all.vars(formSurv)]
     Time <- tmp[all.vars(formSurv)][, 1] # matrix of observed time such as Time=min(Tevent,Tcens)
-    CR <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
+    Death <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
     nTime <- length(Time) # number of subject having Time
     # design matrice
     suppressWarnings({
@@ -489,14 +479,13 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
+    phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
 
 
     #Definition of the survival log-likelihood using zeros trick
-
-    phi[k]<-KK+sum(phi1[k,])
-
     zeros[k]~dpois(phi[k])
+
+
     #Random effects
     b[k,1:Nb]~dmnorm(mub[],Omega[,])
 
@@ -567,14 +556,12 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
+   phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
 
 
     #Definition of the survival log-likelihood using zeros trick
-
-    phi[k]<-KK+sum(phi1[k,])
-
     zeros[k]~dpois(phi[k])
+
     #Random effects
     b[k,1:Nb]~dmnorm(mub[],Omega[,])
 
@@ -606,10 +593,10 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
 
 
-    C <- length(unique(CR)) - 1
+
     i.jags <- function() {
       list(
-        gamma1 = stats::rnorm(C),
+        gamma1 = stats::rnorm(1),
         betaL = stats::rnorm(dim(X)[2]), tau1 = 1, Omega = diag(stats::runif(Nb)), b = matrix(0, n2, Nb)
       )
     }
@@ -620,16 +607,16 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     )
     ###############################
     d.jags1 <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2],
       X = X, Z = Z, id = id2, indtime = indtime,
-      CR = CR, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
+      Death =Death, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
 
     d.jags <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2],
       X = X, Z = Z, id = id2, Xv = Xv, indtime = indtime, nindtime = c(1:dim(X)[2])[-indtime],
-      CR = CR, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
+      Death =Death, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
     if (is.matrix(Xv) == FALSE) {
@@ -796,7 +783,7 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
 
     tmp <- dataSurv[all.vars(formSurv)]
     Time <- tmp[all.vars(formSurv)][, 1] # matrix of observed time such as Time=min(Tevent,Tcens)
-    CR <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
+    Death <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
     nTime <- length(Time) # number of subject having Time
     # design matrice
 
@@ -861,11 +848,10 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
         }
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
+    phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
 
 
     #Definition of the survival log-likelihood using zeros trick
-    phi[k]<-KK+sum(phi1[k,])
     zeros[k]~dpois(phi[k])
     #Random effects
     b[k,1:Nb]~dmnorm(mub[],Omega[,])
@@ -937,11 +923,10 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
         }
 
     logSurv[k]<- -inprod(wk11[k,],chaz[k,])
-    phi1[k]<--Death[k]*log(haz[k])-logSurv[k]
+   phi[k]<- KK-Death[k]*log(haz[k])-logSurv[k]
 
 
     #Definition of the survival log-likelihood using zeros trick
-    phi[k]<-KK+sum(phi1[k,])
     zeros[k]~dpois(phi[k])
     #Random effects
     b[k,1:Nb]~dmnorm(mub[],Omega[,])
@@ -972,11 +957,11 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
   sigma1<-1/tau1
 }"
 
-    C <- length(unique(CR)) - 1
+
     set.seed(2)
     i.jags <- function() {
       list(
-        gamma1 = stats::rnorm(C),
+        gamma1 = stats::rnorm(1),
         betaL = stats::rnorm(dim(X)[2]), tau1 = 1, Omega = diag(stats::runif(Nb)),
         b = matrix(0, n2, Nb)
       )
@@ -989,16 +974,16 @@ UJM <- function(formFixed, formRandom, formGroup, formSurv, dataLong, dataSurv, 
     ###############################
 
     d.jags1 <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2],
       X = X, Z = Z, id = id2, indtime = indtime,
-      CR = CR, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
+      Death =Death, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
 
     d.jags <- list(
-      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2], C = C,
+      n = n, Time = Time, Y1 = y, n2 = n2, XS = XS, NbetasS = dim(XS)[2],
       X = X, Z = Z, id = id2, Xv = Xv, indtime = indtime, nindtime = c(1:dim(X)[2])[-indtime],
-      CR = CR, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
+      Death =Death, mub = rep(0, Nb), V = diag(1, Nb), Nb = Nb, zeros = rep(0, n2),
       NbetasL = dim(X)[2], s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K, KK = KK
     )
     set.seed(2)
