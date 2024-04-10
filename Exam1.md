@@ -164,3 +164,6 @@ h3       1.00960526 0.18004706  0.69618933  1.39670388
 h4       0.97249676 0.17158193  0.67793851  1.33887908
 h5       0.95898814 0.18192923  0.64538832  1.35723983
 ```
+
+
+If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criteria are also provided, which helps in checking the convergence of the MCMC.
