@@ -148,8 +148,16 @@ TS1 <- TS(formFixed, formRandom, formGroup, formSurv,
 
 
 DP <- DP(TS1,
-         s = 0.5, t = 0.5, n.chains = 1, n.iter = 20, n.burnin = 1000,
+         s = 0.5, t = 0.5, n.chains = 1, n.iter = 20, n.burnin = 10,
          n.thin = 1,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+
+
+
+DP <- DP_CI(TS0,
+         s = 0.5, t = 0.5, n.chains = 1, n.iter = 20, n.burnin = 10,
+         n.thin = 1, mi=3,
          DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
 )
 

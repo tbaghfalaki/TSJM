@@ -38,7 +38,7 @@
 #' @md
 #' @export
 
-DP_CI <- function(object, s = s, t = t, n.chains = n.chains, n.iter = n.iter, n.burnin = floor(n.iter / 2),
+DP_CI <- function(object, s = s, t = t, mi=mi, n.chains = n.chains, n.iter = n.iter, n.burnin = floor(n.iter / 2),
                 n.thin = max(1, floor((n.iter - n.burnin) / 1000)),
                 DIC = TRUE, quiet = FALSE, dataLong, dataSurv) {
   Dt <- t
@@ -425,6 +425,10 @@ Omega<-1/Sigma
 
   data_Long_s <- dataLong[dataLong$obstime <= s, ]
 
+
+
+  DP_tot <- NULL
+  for(ttt in 1:mi){
   X <- Z <- Xv <- Zv <- Nb <- list()
   indB <- indtime <- list()
 
@@ -546,13 +550,77 @@ Omega<-1/Sigma
     }
     parameters <- c("b")
     ###############################????
-    betaL <- object$sim_step1[[j]]$PMean$beta
-    betaS <- object$sim_step1[[j]]$PMean$gamma
-    gamma1 <- object$sim_step1[[j]]$PMean$alpha
-    sigma1 <- object$sim_step1[[j]]$PMean$sigma
-    Sigma <- object$sim_step1[[j]]$PMean$Sigma
-    h <- object$sim_step1[[j]]$PMean$h
+    betaLmc <- object$sim_step1[[j]]$sim$beta
+    betaSmc <- object$sim_step1[[j]]$sim$gamma
+    gamma1mc <- object$sim_step1[[j]]$sim$alpha
+    sigma1mc <- object$sim_step1[[j]]$sim$sigma
+    Sigmamc <- object$sim_step1[[j]]$sim$Sigma
+    hmc <- object$sim_step1[[j]]$sim$h
     #### Data
+    Sample <- sample(1:length(sigma1mc), mi)
+
+######
+
+    betaLmc <- object$sim_step1[[j]]$sim$beta
+    betaSmc <- object$sim_step1[[j]]$sim$gamma
+    gamma1mc <- object$sim_step1[[j]]$sim$alpha
+    sigma1mc <- object$sim_step1[[j]]$sim$sigma
+    Sigmamc <- object$sim_step1[[j]]$sim$Sigma
+    hmc <- object$sim_step1[[j]]$sim$h
+    #### Data
+    set.seed(3)
+    Sample <- sample(1:length(sigma1mc), mi)
+
+
+    if (is.matrix(betaLmc) == TRUE) {
+      betaLmc <- betaLmc[Sample, ]
+    } else {
+      betaLmc <- betaLmc[Sample]
+    }
+    gamma1mc <- gamma1mc[Sample]
+    sigma1mc <- sigma1mc[Sample]
+
+    betaSmc <- betaSmc[Sample, ]
+
+
+    if (is.array(Sigmamc) == TRUE) {
+      Sigmamc <- Sigmamc[Sample, , ]
+    } else {
+      Sigmamc <- Sigmamc[Sample]
+    }
+
+    hmc <- hmc[Sample, ]
+
+
+
+    if (is.matrix(betaLmc) == TRUE) {
+      betaL <- betaLmc[ttt, ]
+    } else {
+      betaL <- betaLmc[ttt]
+    }
+    gamma1 <- gamma1mc[ttt]
+    sigma1 <- sigma1mc[ttt]
+
+    betaS <- betaSmc[ttt, ]
+
+
+    if (is.array(Sigmamc) == TRUE) {
+      Sigma <- Sigmamc[ttt, , ]
+    } else {
+      Sigma <- Sigmamc[ttt]
+    }
+
+    h <- hmc[ttt, ]
+
+
+
+
+
+
+
+
+
+
 
 
     NbetasS <- dim(XS)[2]
@@ -651,6 +719,10 @@ Omega<-1/Sigma
     bhat_mean[[j]] <- sim1$mean$b
     bhat_chain[[j]] <- sim1$sims.list$b
   }
+
+
+
+
 
   ################################### ???
   n2 <- dim(dataSurv)[1]
@@ -774,10 +846,23 @@ Omega<-1/Sigma
   }
   Surv_d[Surv_d == 0] <- 0.000001
   DP <- 1 - Surv_n / Surv_d
-  #####################
-  DP_last <- cbind(unique(id), DP)
-  colnames(DP_last) <- c("id", "est")
-  DP_last <- data.frame(DP_last)
 
+
+  DP_tot <- rbind(DP_tot, DP)
+  }
+  #####################
+
+
+  DP <- apply(DP_tot, 2, mean)
+  DPQ <- t(apply(DP_tot, 2, quantile, c(0.025, 0.975)))
+
+  DP_last <- cbind(unique(id), DP, DPQ)
+  colnames(DP_last) <- c("id", "est", "lower", "upper")
+  DP_last <- data.frame(DP_last)
   list(DP = DP_last, s = s, t = Dt)
+
+
+
+
+
 }

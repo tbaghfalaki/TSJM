@@ -58,6 +58,14 @@ DP <- DP(TS1,
 )
 
 
+
+DP <- DP_CI(TS0,
+         s = 0.5, t = 0.5, n.chains = 1, n.iter = 20, n.burnin = 10,
+         n.thin = 1, mi=3,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+
+
 }
 
 
