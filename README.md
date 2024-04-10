@@ -10,5 +10,12 @@ To acquire the latest development version of TSJM, you may utilize the following
 ```
 This will seamlessly fetch and install the most up-to-date version of TSJM for your use.
 
+### Example Usage
+
+
+
+
+
+
 ### Reference 
 Baghfalaki, T., Hashemi, R., Helmer, C. & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
