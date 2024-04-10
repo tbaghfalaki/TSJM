@@ -12,10 +12,10 @@ This will seamlessly fetch and install the most up-to-date version of TSJM for y
 
 ### Example Usage
 
- > Examples from the GCPaBayes can be found in the following:
+ > Examples from the TSJM can be found in the following:
 
-- Parameter estimation: This analysis is presented [here](/CSExamp.md)
-- Dynamic prediction: This analysis is presented [here](/CSExamp.md)
+- Parameter estimation: This analysis is presented [here](/Exam1.md)
+- Dynamic prediction: This analysis is presented [here](/Exam2.md)
 
 ### Reference 
 Baghfalaki, T., Hashemi, R., Helmer, C. & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
