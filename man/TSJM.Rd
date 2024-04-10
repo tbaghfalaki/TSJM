@@ -11,7 +11,7 @@ Employing a two-stage strategy for variable selection in joint modeling of multi
 \references{
 \enumerate{
 \item
-Baghfalaki, T., Hashemi, R., Catherine Helmer & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
+Baghfalaki, T., Hashemi, R., Helmer, C. & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
 
 }
 }
