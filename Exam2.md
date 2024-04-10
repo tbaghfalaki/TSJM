@@ -177,3 +177,5 @@ If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criter
 
 
 # Dynamic prediction 
+
+For dynamic prediction, we have two functions 
