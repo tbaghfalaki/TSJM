@@ -1,5 +1,7 @@
 export(UJM)
 export(TS)
+export(DP)
+export(DP_CI)
 importFrom("stats","model.frame")
 importFrom("stats","model.matrix")
 importFrom("statmod","gauss.quad")
@@ -11,5 +13,4 @@ importFrom("jagsUI","jags")
 importFrom("stats",'runif')
 importFrom("survival","Surv")
 importFrom("parallelsugar","mclapply")
-importFrom("stats", "integrate")
 
