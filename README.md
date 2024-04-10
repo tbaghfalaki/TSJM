@@ -12,7 +12,6 @@ This will seamlessly fetch and install the most up-to-date version of TSJM for y
 
 ### Example Usage
 
-
  > Examples from the GCPaBayes can be found in the following:
 
 - Parameter estimation: This analysis is presented [here](/CSExamp.md)
