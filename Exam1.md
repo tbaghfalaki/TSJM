@@ -7,7 +7,7 @@ library(TSJM)
 Generating summary statistics
 
 
-Loading data
+Loading data of the package:
 
 ```
 data(dataLong)
@@ -109,5 +109,5 @@ TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
 )
 ```
 
-The outputs of this function is as follws: 
+The outputs of this function is as follows: 
 
