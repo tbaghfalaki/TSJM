@@ -33,9 +33,9 @@ model <- list("intercept", "linear", "quadratic")
 
 TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
          nmark = 3, K1 = 15, K2 = 15,
-         model = model, n.chains1 = 1, n.iter1 = 20, n.burnin1 = 10,
-         n.thin1 = 1,  n.chains2 = 1, n.iter2 = 30, n.burnin2 = 10,
-         n.thin2 = 1, simplify=TRUE, Obstime = "obstime", ncl = 2,
+         model = model, n.chains1 = 1, n.iter1 = 2000, n.burnin1 = 1000,
+         n.thin1 = 1,  n.chains2 = 1, n.iter2 = 3000, n.burnin2 = 1000,
+         n.thin2 = 1, Obstime = "obstime", ncl = 3,
          DIC = TRUE, quiet = FALSE, dataLong_t, dataSurv_t
 )
 
@@ -45,7 +45,7 @@ TS1 <- TS(formFixed, formRandom, formGroup, formSurv,
          nmark = 3, K1 = 15, K2 = 15,
          model = model, n.chains1 = 1, n.iter1 = 20, n.burnin1 = 10,
          n.thin1 = 1,  n.chains2 = 1, n.iter2 = 30, n.burnin2 = 10,
-         n.thin2 = 1, simplify=TRUE, Obstime = "obstime", ncl = 2,
+         n.thin2 = 1, Obstime = "obstime", ncl = 2,
          DIC = TRUE, quiet = FALSE, dataLong_t, dataSurv_t
 )
 

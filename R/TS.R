@@ -26,7 +26,6 @@
 #' @param n.iter2 integer specifying the total number of iterations in the second stage; default is 1000.
 #' @param n.burnin2 integer specifying how many of n.iter to discard as burn-in in the second stage; default is 5000.
 #' @param n.thin2 integer specifying the thinning of the chains in the second stage; default is 1.
-#' @param simplify Logical; the option for simplifying the use of CS and DS; default is TRUE.
 #' @param DIC Logical; if TRUE (default), compute deviance, pD, and DIC. The rule pD=var(deviance) / 2 is used.
 #' @param quiet Logical, whether to suppress stdout in jags.model().
 #'
@@ -55,7 +54,7 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
                n.thin1 = max(1, floor((n.iter1 - n.burnin1) / 1000)),
                n.chains2 = n.chains2, n.iter2 = n.iter2, n.burnin2 = floor(n.iter2 / 2),
                n.thin2 = max(1, floor((n.iter2 - n.burnin2) / 1000)),
-               Obstime = "obstime", ncl = ncl, simplify= TRUE,
+               Obstime = "obstime", ncl = ncl,
                DIC = TRUE, quiet = FALSE, dataLong, dataSurv) {
   j <- 1:nmark
   boot_fx <- function(j) {
