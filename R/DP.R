@@ -38,8 +38,8 @@
 #' @export
 
 DP <- function(object, s = s, t = t, n.chains = n.chains, n.iter = n.iter, n.burnin = floor(n.iter / 2),
-                n.thin = max(1, floor((n.iter - n.burnin) / 1000)),
-                DIC = TRUE, quiet = FALSE, dataLong, dataSurv) {
+               n.thin = max(1, floor((n.iter - n.burnin) / 1000)),
+               DIC = TRUE, quiet = FALSE, dataLong, dataSurv) {
   Dt <- t
   KK <- 1000000
 
@@ -726,30 +726,29 @@ Omega<-1/Sigma
   DP <- c()
 
   for (k in 1:n2) {
-
-      Alpha0[k] <- betaS %*% XS[k, ] + alpha %*%  LP1[k,]
-      Alpha1[k] <- alpha %*%  LP2[k,]
-      Alpha2[k] <- alpha %*%  LP3[k,]
-
+    Alpha0[k] <- betaS %*% XS[k, ] + alpha %*% LP1[k, ]
+    Alpha1[k] <- alpha %*% LP2[k, ]
+    Alpha2[k] <- alpha %*% LP3[k, ]
 
 
 
-      xk11 <- wk11 <- c()
 
-      for (j in 1:K) {
-        # Scaling Gauss-Kronrod/Legendre quadrature
-        xk11[j] <- (xk[j] + 1) / 2 * s
-        wk11[j] <- wk[j] * s / 2
-        #  Hazard function at Gauss-Kronrod/Legendre nodes
-        chaz[k, j] <- ((h[1] * step(peice[1] - xk11[j])) +
-                         (h[2] * step(xk11[j] - peice[1]) * step(peice[2] - xk11[j])) +
-                         (h[3] * step(xk11[j] - peice[2]) * step(peice[3] - xk11[j])) +
-                         (h[4] * step(xk11[j] - peice[3]) * step(peice[4] - xk11[j])) +
-                         (h[5] * step(xk11[j] - peice[4]))) * exp(Alpha0[k] + Alpha1[k] * xk11[j]+ Alpha2[k] * xk11[j]^2)
-      }
+    xk11 <- wk11 <- c()
+
+    for (j in 1:K) {
+      # Scaling Gauss-Kronrod/Legendre quadrature
+      xk11[j] <- (xk[j] + 1) / 2 * s
+      wk11[j] <- wk[j] * s / 2
+      #  Hazard function at Gauss-Kronrod/Legendre nodes
+      chaz[k, j] <- ((h[1] * step(peice[1] - xk11[j])) +
+        (h[2] * step(xk11[j] - peice[1]) * step(peice[2] - xk11[j])) +
+        (h[3] * step(xk11[j] - peice[2]) * step(peice[3] - xk11[j])) +
+        (h[4] * step(xk11[j] - peice[3]) * step(peice[4] - xk11[j])) +
+        (h[5] * step(xk11[j] - peice[4]))) * exp(Alpha0[k] + Alpha1[k] * xk11[j] + Alpha2[k] * xk11[j]^2)
+    }
 
 
-      Surv_d[k] <- exp(-inprod(wk11, chaz[k, ]))
+    Surv_d[k] <- exp(-inprod(wk11, chaz[k, ]))
   }
 
   Surv_n <- c()
@@ -763,10 +762,10 @@ Omega<-1/Sigma
       wk11[j] <- wk[j] * (s + Dt) / 2
       #  Hazard function at Gauss-Kronrod/Legendre nodes
       chaz[k, j] <- ((h[1] * step(peice[1] - xk11[j])) +
-                       (h[2] * step(xk11[j] - peice[1]) * step(peice[2] - xk11[j])) +
-                       (h[3] * step(xk11[j] - peice[2]) * step(peice[3] - xk11[j])) +
-                       (h[4] * step(xk11[j] - peice[3]) * step(peice[4] - xk11[j])) +
-                       (h[5] * step(xk11[j] - peice[4]))) * exp(Alpha0[k] + Alpha1[k] * xk11[j]++ Alpha2[k] * xk11[j]^2)
+        (h[2] * step(xk11[j] - peice[1]) * step(peice[2] - xk11[j])) +
+        (h[3] * step(xk11[j] - peice[2]) * step(peice[3] - xk11[j])) +
+        (h[4] * step(xk11[j] - peice[3]) * step(peice[4] - xk11[j])) +
+        (h[5] * step(xk11[j] - peice[4]))) * exp(Alpha0[k] + Alpha1[k] * xk11[j] + +Alpha2[k] * xk11[j]^2)
     }
 
     Surv_n[k] <- exp(-inprod(wk11, chaz[k, ]))

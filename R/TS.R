@@ -71,7 +71,7 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
     list(sim = A1$MCMC, PMean = A1$PMean, Long = A1$Estimation)
   }
 
-  #results <- parallel::mclapply(j, boot_fx, mc.cores = ncl)
+  # results <- parallel::mclapply(j, boot_fx, mc.cores = ncl)
   results <- parallelsugar::mclapply(j, boot_fx, mc.cores = ncl)
 
 
@@ -239,7 +239,7 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
   K <- length(xk) # K-points
   ####################### Univariate #######################
   peice <- quantile(Time, seq(.2, 0.8, length = 4))
-  #delta <- nnet::class.ind(arules::discretize(Time, method = "fixed", c(0, peice, max(Time))))
+  # delta <- nnet::class.ind(arules::discretize(Time, method = "fixed", c(0, peice, max(Time))))
 
   model_S2 <- "model{
 
@@ -296,8 +296,8 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
   NbetasS <- dim(XS)[2]
   d.jags <- list(
     n = n2, mu1 = mu1, zeros = rep(0, n2), NbetasS = dim(XS)[2], nmark = nmark,
-    LP1 = Lp1, LP2 = Lp2, LP3 = Lp3, Time = Time, Death = Death, XS = XS,KK=10000,
-    s = peice, J = length(peice)+1, xk = xk, wk = wk, K = K
+    LP1 = Lp1, LP2 = Lp2, LP3 = Lp3, Time = Time, Death = Death, XS = XS, KK = 10000,
+    s = peice, J = length(peice) + 1, xk = xk, wk = wk, K = K
   )
 
   i.jags <- function() {
@@ -306,12 +306,12 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
 
   parameters <- c("alpha", "betaS", "h")
 
-    model.file <- textConnection(model_S2)
+  model.file <- textConnection(model_S2)
 
 
-    sim1 <- jagsUI::jags(
+  sim1 <- jagsUI::jags(
     data = d.jags,
-    inits=i.jags,
+    inits = i.jags,
     parameters.to.save = parameters,
     model.file = model.file,
     n.chains = n.chains2,
@@ -385,16 +385,17 @@ TS <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = 
   }
 
 
-    Longitudinal <- list()
-    for (j in 1:nmark) {
-      Longitudinal[[j]] <- results[[j]]$Long
-    }
-#############################
+  Longitudinal <- list()
+  for (j in 1:nmark) {
+    Longitudinal[[j]] <- results[[j]]$Long
+  }
+  #############################
 
   list(
     formFixed = formFixed, formRandom = formRandom, formGroup = formGroup, formSurv = formSurv,
     model = model, Obstime = Obstime,
     mu1 = mu1, peice = peice,
     nmark = nmark, XS = XS, Lp1 = Lp1, Lp2 = Lp2, Lp3 = Lp3,
-    sim_step1 = results, sim_step2=sim1, Longitudinal = Longitudinal, TDsurvival = TDsurvival  )
+    sim_step1 = results, sim_step2 = sim1, Longitudinal = Longitudinal, TDsurvival = TDsurvival
+  )
 }
