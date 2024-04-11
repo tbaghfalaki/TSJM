@@ -53,7 +53,6 @@ formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime, Y4 ~ obstime)
 formRandom <- list(~obstime, ~obstime, ~obstime, ~obstime)
 formGroup <- list(~id, ~id, ~id, ~id)
 formSurv <- survival::Surv(survtime, death) ~ x1 + x2
-model <- list("linear", "linear", "linear", "linear")
 ```
 
 We need to choose the model for the marker trend among "intercept," "linear," and "quadratic." For instance, if we consider a covariate $x_1$, the options are as follows:
