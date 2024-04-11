@@ -4,10 +4,7 @@ Getting Started
 ```
 library(TSJM)
 ```
-Generating summary statistics
-
-
-Loading data of the package:
+Loading the data from the package includes both longitudinal data in long format and survival data. It's essential to ensure that the same subject (ID) is present in both datasets.
 
 ```
 data(dataLong)
