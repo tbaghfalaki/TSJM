@@ -1,177 +1,169 @@
 Getting Started
 ---------------
 
-    library(GCPBayes)
-
+```
+library(TSJM)
+```
 Generating summary statistics
------------------------------
-
-    set.seed(1)
-    mg=10
-    SD=diag(0.05,mg)
-    corr=0.5
-    R=matrix(corr,mg,mg)+(1-corr)*diag(mg)
-    Sigma=crossprod(crossprod(SD,R),SD)
-    sign=rbinom(mg,1,.5)
-    sign[sign==0]=-1
-    betat=rep(1,mg)
-    betat=betat*sign
-    Betah=mvtnorm::rmvnorm(2,betat,Sigma)
-
-    snpnames=1:mg
-    genename="simulated_data"
-
-    row.names(Betah)<-c("Study_1","Study_2")
-    colnames(Betah)<-sprintf("%s",seq(1:mg))
 
 
-    row.names(Sigma)<-sprintf("%s",seq(1:mg))
-    colnames(Sigma)<-sprintf("%s",seq(1:mg))
+Loading data of the package:
 
-    # generated Behath
-    #print(Betah)
-    #print(Sigma)
+```
+data(dataLong)
+data(dataSurv)
+```
 
-### Summary Statistics including betah\_k, Sigmah\_k, k=1,2
-
-#### betah\_k, k=1,2
-
-    |         | 1      | 2      | 3     | 4     | 5      | 6     | 7     | 8     | 9     | 10     |
-    |---------|--------|--------|-------|-------|--------|-------|-------|-------|-------|--------|
-    | Study_1 | -1.022 | -0.976 | 1.033 | 1.027 | -1.004 | 1.061 | 1.021 | 0.985 | 0.929 | -0.953 |
-    | Study_2 | -0.979 | -0.978 | 1.056 | 1.051 | -0.957 | 1.055 | 1.050 | 1.025 | 0.952 | -0.956 |
-
-#### Sigmah\_1=Sigmah\_2
-
-    |    | 1       | 2       | 3       | 4       | 5       | 6       | 7       | 8       | 9       | 10      |
-    |----|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|
-    | 1  | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 2  | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 3  | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 4  | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 5  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 6  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 | 0.00125 |
-    | 7  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 | 0.00125 |
-    | 8  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 | 0.00125 |
-    | 9  | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  | 0.00125 |
-    | 10 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.00125 | 0.0025  |
-
-### runing DS function
-
-> For running DS we consider three chains (nchains=3), the lengths of
-> MCMC iteration and burn-in are set at 1000 and 500, respectively
-> (niter=1000, burnin=500).  
-> Also, we consider kappa0=c(0.5,0.25,0.5) and sigma20=c(1,1.25,1.5) as
-> initial values. The hyperparameters are considered as a1=0.1, a2=0.1,
-> d1=0.1 and d2=0.1.
-
-    Betah1=Betah[1,]; Betah2=Betah[2,];
-    Sigmah1=Sigma; Sigmah2=Sigma;
-    res2 = DS(Betah1, Betah2,
-              Sigmah1, Sigmah2,
-              kappa0=c(0.5,0.25,0.6), sigma20=c(1,1.2,1.5),
-              mg=mg, niter=1000, burnin=500,
-              nchains=3, nthin=2, a1=0.1, a2=0.1, d1=0.1, d2=0.1,
-              snpnames, genename)
-
-    #print(round(res2$Outputs[[1]]$`Statistics of Trait 1 for Beta_1`,digits=2))
-    #print(round(res2$Outputs[[1]]$`Statistics of Trait 2  for Beta_2`,digits=2))
-    #print(round(res2$Outputs[[1]]$`Other Parameters`,digits=2))
-    #print(round(res2$BGR[[1]],digits=2))
-    #print(round(res2$BGR[[2]],digits=2))
-
-#### Statistics of Trait 1 for Beta\_1 (only for chain 1)
-
-    |       | Name of SNP | Mean  | SD   | val2.5pc | Median | val97.5pc |
-    |-------|-------------|-------|------|----------|--------|-----------|
-    | [1,]  | 1           | -0.94 | 0.05 | -1.04    | -0.93  | -0.85     |
-    | [2,]  | 2           | 1.13  | 0.05 | 1.03     | 1.13   | 1.22      |
-    | [3,]  | 3           | -0.94 | 0.06 | -1.05    | -0.94  | -0.83     |
-    | [4,]  | 4           | -0.98 | 0.06 | -1.09    | -0.98  | -0.88     |
-    | [5,]  | 5           | 1.03  | 0.05 | 0.94     | 1.03   | 1.13      |
-    | [6,]  | 6           | -0.94 | 0.05 | -1.03    | -0.94  | -0.84     |
-    | [7,]  | 7           | 1.02  | 0.05 | 0.93     | 1.02   | 1.12      |
-    | [8,]  | 8           | -0.95 | 0.05 | -1.04    | -0.95  | -0.85     |
-    | [9,]  | 9           | 1.06  | 0.05 | 0.97     | 1.06   | 1.16      |
-    | [10,] | 10          | 1.01  | 0.06 | 0.9      | 1.01   | 1.11      |
-
-#### Statistics of Trait 2 for Beta\_2 (only for chain 1)
-
-    |       | Name of SNP | Mean  | SD   | val2.5pc | Median | val97.5pc |
-    |-------|-------------|-------|------|----------|--------|-----------|
-    | [1,]  | 1           | -1.03 | 0.05 | -1.12    | -1.02  | -0.92     |
-    | [2,]  | 2           | 0.96  | 0.05 | 0.84     | 0.97   | 1.06      |
-    | [3,]  | 3           | -1.07 | 0.05 | -1.17    | -1.07  | -0.99     |
-    | [4,]  | 4           | -1.03 | 0.05 | -1.14    | -1.03  | -0.92     |
-    | [5,]  | 5           | 1.02  | 0.05 | 0.92     | 1.02   | 1.12      |
-    | [6,]  | 6           | -1.09 | 0.05 | -1.19    | -1.1   | -1        |
-    | [7,]  | 7           | 1     | 0.05 | 0.91     | 1      | 1.09      |
-    | [8,]  | 8           | -1.02 | 0.05 | -1.11    | -1.02  | -0.93     |
-    | [9,]  | 9           | 0.93  | 0.05 | 0.83     | 0.93   | 1.02      |
-    | [10,] | 10          | 0.98  | 0.05 | 0.88     | 0.98   | 1.07      |
-
-#### Statistics of Other Parameters (only for chain 1)
-
-    |        | Mean | SD   | val2.5pc | Median | val97.5pc |
-    |--------|------|------|----------|--------|-----------|
-    | kappa  | 0.95 | 0.12 | 0.55     | 1      | 1         |
-    | sigma2 | 1.1  | 0.36 | 0.64     | 1.02   | 2.1       |
-
-#### Gelman-Rubin convergence diagnostic for Beta\_k, k=1,2
-
-    |       | Name of SNP | BGR for Beta_1 | BGR for Beta_2 |
-    |-------|-------------|----------------|----------------|
-    | [1,]  | 1           | 1.01           | 1.01           |
-    | [2,]  | 2           | 1.01           | 1.01           |
-    | [3,]  | 3           | 1              | 1              |
-    | [4,]  | 4           | 1              | 1              |
-    | [5,]  | 5           | 1.01           | 1.02           |
-    | [6,]  | 6           | 1.03           | 1.02           |
-    | [7,]  | 7           | 1              | 1.01           |
-    | [8,]  | 8           | 1              | 1.03           |
-    | [9,]  | 9           | 1.03           | 1.01           |
-    | [10,] | 10          | 1.01           | 1.02           |
-
-#### Gelman-Rubin convergence diagnostic for Other Parameters
-
-    |      | kappa | sigma2 |
-    |------|-------|--------|
-    | [1,] | 1.06  | 1.01   |
-
-### Trace, density and ACF Plots for unknown parameters
-
-![](pressured-1.png)![](pressured-2.png)![](pressured-3.png)![](pressured-4.png)![](pressured-5.png)![](pressured-6.png)![](pressured-7.png)![](pressured-8.png)![](pressured-9.png)![](pressured-10.png)![](pressured-11.png)![](pressured-12.png)
-
-### Important criteria for chain 1
-
-> The output of this part includes log\_10BF and lBFDR for testing H0
-> and theta for detecting group pleiotropy. Also, detecting variable
-> pleiotropy using the number of studies for each variable with nonzero
-> signal by CI can be preformed.
-
-    #print(res2$Outputs[[1]]$Criteria)
-
-    ## $`Name of Gene`
-    ## [1] "simulated_data"
+Dividing data to 80% training data and 20% validation set
 
 
-    ## $`Name of SNP`
-    ## [1]  1  2  3  4  5  6  7  8  9 10
+```
+set.seed(2)
+INDTRAIN <- sample(dataSurv$id, 0.8 * (dim(dataSurv)[1]))
+INDVALID <- dataSurv$id[-INDTRAIN]
+dataLong_t <- subset(
+  dataLong,
+  dataLong$id %in% INDTRAIN
+)
+dataSurv_t <- subset(
+  dataSurv,
+  dataSurv$id %in% INDTRAIN
+)
 
-    ## $log10BF
-    ## [1] Inf
+dataLong_v <- subset(
+  dataLong,
+  dataLong$id %in% INDVALID
+)
+dataSurv_v <- subset(
+  dataSurv,
+  dataSurv$id %in% INDVALID
+)
+```
 
-    ## $lBFDR
-    ## [1] 0
+We are considering three markers; therefore, we require three lists as follows: one for the fixed effects model, one for the random effects model, and another for the survival model.
 
-    ## $theta
-    ## [1] 1
+```
+formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime)
+formRandom <- list(~obstime, ~obstime, ~obstime)
+formGroup <- list(~id, ~id, ~id)
+formSurv <- survival::Surv(survtime, death) ~ x1 + x2
+```
 
-    ## $`# studies nonzero signal by CI`
-    ##  [1] 2 2 2 2 2 2 2 2 2 2
+We need to choose the model for the marker trend among "intercept," "linear," and "quadratic." For instance, if we consider a covariate $x_1$, the options are as follows:
 
-    ## $PPA1
-    ## [1] 1
+intercept:
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_1+b_{0ki}+\varepsilon_{ikt}$
 
-    ## $PPA2
-    ## [1] 1
+
+linear:
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_1+b_{0ki}+b_{1ki} t+\varepsilon_{ikt}$
+
+
+quadratic:
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}t^2+\beta_{3k}x_1+b_{0ki}+b_{1ki} t+b_{1ki} t^2+\varepsilon_{ikt}$
+
+
+This has been done by considering the following command:
+
+```
+model <- list("intercept", "linear", "quadratic")
+```
+Finally, we have to use the TS function with the following arguments:
+
+
+- formFixed a list of formulas for fixed part of longitudinal model
+- formRandom a list of formulas for random part of longitudinal model
+- formGroup a list of formulas specifying the cluster variable for Y (e.g. = list (~ subject, ~ subject,...))
+- formSurv formula for survival model
+- dataLong data set of observed longitudinal variables.
+- dataSurv data set of observed survival variables.
+- nmark the number of longitudinal markers
+- K1 Number of nodes and weights for calculating Gaussian quadrature in the first stage.
+- K2 Number of nodes and weights for calculating Gaussian quadrature in the second stage.
+- model a list of the models for the longitudinal part which includes "linear" or "quadratic".
+- Obstime the observed time in longitudinal data
+- ncl the number of nodes to be forked for parallel computing
+- n.chains1 the number of parallel chains for the model in the first stage; default is 1.
+- n.iter1 integer specifying the total number of iterations in the first stage; default is 1000.
+- n.burnin1 integer specifying how many of n.iter to discard as burn-in in the first stage; default is 5000.
+- n.thin1 integer specifying the thinning of the chains in the first stage; default is 1.
+- n.chains2 the number of parallel chains for the model in the second stage; default is 1.
+- n.iter2 integer specifying the total number of iterations in the second stage; default is 1000.
+- n.burnin2 integer specifying how many of n.iter to discard as burn-in in the second stage; default is 5000.
+- n.thin2 integer specifying the thinning of the chains in the second stage; default is 1.
+- simplify Logical; the option for simplifying the use of CS and DS; default is TRUE.
+- DIC Logical; if TRUE (default), compute deviance, pD, and DIC. The rule pD=var(deviance) / 2 is used.
+- quiet Logical, whether to suppress stdout in jags.model().
+-----------------
+
+As an example, consider the following command, where this implementation has been performed on training data:
+
+
+```
+TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
+         nmark = 3, K1 = 15, K2 = 15,
+         model = model, n.chains1 = 1, n.iter1 = 2000, n.burnin1 = 1000,
+         n.thin1 = 1,  n.chains2 = 1, n.iter2 = 3000, n.burnin2 = 1000,
+         n.thin2 = 1, Obstime = "obstime", ncl = 3,
+         DIC = TRUE, quiet = FALSE, dataLong_t, dataSurv_t
+)
+```
+
+The outputs of this function is as follows: 
+
+```
+> TS0$Longitudinal
+[[1]]
+[[1]]$Longitudinal_model
+                     Est          SD       L_CI      U_CI
+(Intercept) -0.003167629 0.051649161 -0.1016439 0.0865190
+obstime      0.651195083 0.024117669  0.6057510 0.6996882
+sigma2_e     0.304434795 0.006494876  0.2912420 0.3178109
+sigma2_b     1.318007024 0.087255212  1.1564923 1.5036663
+
+
+[[2]]
+[[2]]$Longitudinal_model
+                  Est         SD       L_CI      U_CI
+(Intercept) 0.1079177 0.02551374 0.05766939 0.1556610
+obstime     0.7318347 0.02821918 0.68070271 0.7879759
+sigma2      0.1988282 0.00442706 0.19091613 0.2079220
+
+[[2]]$Sigma
+          Intercept      Time
+Intercept 1.0611350 0.5255265
+Time      0.5255265 1.0764285
+
+
+[[3]]
+[[3]]$Longitudinal_model
+                    Est          SD        L_CI        U_CI
+(Intercept) -0.01248891 0.020887352 -0.05146358  0.02923079
+obstime      0.53419759 0.073747348  0.39215866  0.64446072
+obstime2    -0.63622137 0.052401701 -0.70784160 -0.53403394
+sigma2       0.19828364 0.004728854  0.18956590  0.20868304
+
+[[3]]$Sigma
+           Intercept       Time      Time2
+Intercept  1.0512538  0.5376876 -0.1235974
+Time       0.5376876  1.0998180 -0.2271203
+Time2     -0.1235974 -0.2271203  0.4990175
+
+
+> TS0$TDsurvival
+$S_model
+                Est         SD        L_CI        U_CI
+x1       0.27251737 0.14241424 -0.01891624  0.54445881
+x2       0.02010240 0.13661497 -0.25578120  0.27991697
+Marker1 -0.03986755 0.05585649 -0.14893049  0.07103536
+Marker2 -0.27965352 0.05428684 -0.38340941 -0.17559974
+Marker3  0.21850350 0.05160108  0.11619111  0.32225479
+h1       1.05664630 0.19742373  0.71824690  1.49755694
+h2       0.90545060 0.16341794  0.61461051  1.24709989
+h3       1.00960526 0.18004706  0.69618933  1.39670388
+h4       0.97249676 0.17158193  0.67793851  1.33887908
+h5       0.95898814 0.18192923  0.64538832  1.35723983
+```
+
+
+If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criteria are also provided, which helps in checking the convergence of the MCMC.
