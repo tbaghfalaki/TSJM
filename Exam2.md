@@ -178,4 +178,20 @@ If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criter
 
 # Dynamic prediction 
 
-For dynamic prediction, we have two functions 
+For dynamic prediction, we offer two functions: DP and DP_CI. The distinction between these two functions lies in their computing approach, as described in the main paper. The first function employs a first-order approximation of dynamic prediction, while the second utilizes Monte Carlo approximation, allowing for the computation of credible intervals.
+
+#### DP function
+The main arguments of this functions are as follows:
+- object an object inheriting from class TS
+-  s the landmark time for prediction
+-  t the window of prediction for prediction
+-  dataLong data set of observed longitudinal variables (validation set).
+-  dataSurv data set of observed survival variables (validation set).
+
+```
+DP <- DP(object = TS0,
+         s = 0.5, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
+         n.thin = 1,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+```
