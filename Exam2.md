@@ -230,6 +230,9 @@ Computing the criteria using this package is straightforward, as demonstrated by
 Consider the following command: 
 
 ```
+library(survival)
+library(DPCri)
+
 Criteria(
   s = 0.5, t = 0.5, Survt = dataSurv_v$survtime,
   CR = dataSurv_v$death, P = DP$DP$est, cause = 1
