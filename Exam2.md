@@ -10,8 +10,6 @@ Getting Started
 ```
 library(TSJM)
 ```
-Generating summary statistics
-
 
 Loading the data from the package includes both longitudinal data in long format and survival data. It's essential to ensure that the same subject (ID) is present in both datasets.
 
@@ -232,6 +230,9 @@ Computing the criteria using this package is straightforward, as demonstrated by
 Consider the following command: 
 
 ```
+library(survival)
+library(DPCri)
+
 Criteria(
   s = 0.5, t = 0.5, Survt = dataSurv_v$survtime,
   CR = dataSurv_v$death, P = DP$DP$est, cause = 1
@@ -245,7 +246,7 @@ AUC 0.6488860 0.10095338
 BS  0.2177984 0.02648602
 ```
 
-The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation.
+The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation. Using this function facilitates the computation of credible intervals for each prediction.
 
 ```
 DP <- DP_CI(TS1,
