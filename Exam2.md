@@ -2,7 +2,7 @@ For computing risk prediction, it is necessary to first estimate the parameters 
 
 
 # Parameter estimatiom
-@@ text in purple (and bold)@@
+<p style='color:red'>This is some red text.</p>
 
 
 Getting Started
