@@ -46,13 +46,14 @@ dataSurv_v <- subset(
 )
 ```
 
-We are considering three markers; therefore, we require three lists as follows: one for the fixed effects model, one for the random effects model, and another for the survival model.
+We are considering four markers; therefore, we require four lists as follows: one for the fixed effects model, one for the random effects model, and another for the survival model.
 
 ```
-formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime)
-formRandom <- list(~obstime, ~obstime, ~obstime)
-formGroup <- list(~id, ~id, ~id)
+formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime, Y4 ~ obstime)
+formRandom <- list(~obstime, ~obstime, ~obstime, ~obstime)
+formGroup <- list(~id, ~id, ~id, ~id)
 formSurv <- survival::Surv(survtime, death) ~ x1 + x2
+model <- list("linear", "linear", "linear", "linear")
 ```
 
 We need to choose the model for the marker trend among "intercept," "linear," and "quadratic." For instance, if we consider a covariate $x_1$, the options are as follows:
@@ -72,45 +73,16 @@ $Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}t^2+\beta_{3k}x_1+b_{0ki}+b_{1ki} t
 This has been done by considering the following command:
 
 ```
-model <- list("intercept", "linear", "quadratic")
+model <- list("linear", "linear", "linear", "linear")
 ```
-Finally, we have to use the TS function with the following arguments:
-
-
-- formFixed a list of formulas for fixed part of longitudinal model
-- formRandom a list of formulas for random part of longitudinal model
-- formGroup a list of formulas specifying the cluster variable for Y (e.g. = list (~ subject, ~ subject,...))
-- formSurv formula for survival model
-- dataLong data set of observed longitudinal variables.
-- dataSurv data set of observed survival variables.
-- nmark the number of longitudinal markers
-- K1 Number of nodes and weights for calculating Gaussian quadrature in the first stage.
-- K2 Number of nodes and weights for calculating Gaussian quadrature in the second stage.
-- model a list of the models for the longitudinal part which includes "linear" or "quadratic".
-- Obstime the observed time in longitudinal data
-- ncl the number of nodes to be forked for parallel computing
-- n.chains1 the number of parallel chains for the model in the first stage; default is 1.
-- n.iter1 integer specifying the total number of iterations in the first stage; default is 1000.
-- n.burnin1 integer specifying how many of n.iter to discard as burn-in in the first stage; default is 5000.
-- n.thin1 integer specifying the thinning of the chains in the first stage; default is 1.
-- n.chains2 the number of parallel chains for the model in the second stage; default is 1.
-- n.iter2 integer specifying the total number of iterations in the second stage; default is 1000.
-- n.burnin2 integer specifying how many of n.iter to discard as burn-in in the second stage; default is 5000.
-- n.thin2 integer specifying the thinning of the chains in the second stage; default is 1.
-- simplify Logical; the option for simplifying the use of CS and DS; default is TRUE.
-- DIC Logical; if TRUE (default), compute deviance, pD, and DIC. The rule pD=var(deviance) / 2 is used.
-- quiet Logical, whether to suppress stdout in jags.model().
------------------
-
-As an example, consider the following command, where this implementation has been performed on training data:
-
+Finally, we utilize the TS function, which has been applied to the training data:
 
 ```
-TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
-         nmark = 3, K1 = 15, K2 = 15,
+TS1 <- TS(formFixed, formRandom, formGroup, formSurv,
+         nmark = 4, K1 = 15, K2 = 15,
          model = model, n.chains1 = 1, n.iter1 = 2000, n.burnin1 = 1000,
          n.thin1 = 1,  n.chains2 = 1, n.iter2 = 3000, n.burnin2 = 1000,
-         n.thin2 = 1, Obstime = "obstime", ncl = 3,
+         n.thin2 = 1, Obstime = "obstime", ncl = 2,
          DIC = TRUE, quiet = FALSE, dataLong_t, dataSurv_t
 )
 ```
