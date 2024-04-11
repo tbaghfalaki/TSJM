@@ -1,4 +1,4 @@
-### Variable Selection and Dynamic Prediction in Joint Models of Multiple Longitudinal Measures and Competing Risks
+### Parameter Estimation and Dynamic Prediction in Joint Models of Multiple Longitudinal Measures and Time-to-Event Outcome
 A two-stage strategy is employed to jointly model multiple longitudinal measures and time-to-event outcomes. The initial stage entails estimating K one-marker joint models for each marker. In the subsequent stage, time-varying covariates are integrated into a proportional hazard model for parameter estimation. Both phases adhere to the Bayesian paradigm. Furthermore, this approach enables the computation of dynamic predictions based on the estimated parameter values.
 
 ### Installation
