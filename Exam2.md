@@ -1,7 +1,7 @@
 For computing risk prediction, it is necessary to first estimate the parameters of the model and then utilize its object in the functions for dynamic prediction.
 
 
-# {\color{red} Parameter estimatiom}
+# Parameter estimation
 
 
 Getting Started
