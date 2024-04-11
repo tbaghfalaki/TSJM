@@ -1,7 +1,7 @@
 For computing risk prediction, it is necessary to first estimate the parameters of the model and then utilize its object in the functions for dynamic prediction.
 
 
-# Parameter estimatiom
+# Parameter estimation
 
 
 Getting Started
@@ -46,12 +46,12 @@ dataSurv_v <- subset(
 )
 ```
 
-We are considering three markers; therefore, we require three lists as follows: one for the fixed effects model, one for the random effects model, and another for the survival model.
+We are considering four markers; therefore, we require four lists as follows: one for the fixed effects model, one for the random effects model, and another for the survival model.
 
 ```
-formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime)
-formRandom <- list(~obstime, ~obstime, ~obstime)
-formGroup <- list(~id, ~id, ~id)
+formFixed <- list(Y1 ~ obstime, Y2 ~ obstime, Y3 ~ obstime, Y4 ~ obstime)
+formRandom <- list(~obstime, ~obstime, ~obstime, ~obstime)
+formGroup <- list(~id, ~id, ~id, ~id)
 formSurv <- survival::Surv(survtime, death) ~ x1 + x2
 ```
 
@@ -72,45 +72,16 @@ $Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}t^2+\beta_{3k}x_1+b_{0ki}+b_{1ki} t
 This has been done by considering the following command:
 
 ```
-model <- list("intercept", "linear", "quadratic")
+model <- list("linear", "linear", "linear", "linear")
 ```
-Finally, we have to use the TS function with the following arguments:
-
-
-- formFixed a list of formulas for fixed part of longitudinal model
-- formRandom a list of formulas for random part of longitudinal model
-- formGroup a list of formulas specifying the cluster variable for Y (e.g. = list (~ subject, ~ subject,...))
-- formSurv formula for survival model
-- dataLong data set of observed longitudinal variables.
-- dataSurv data set of observed survival variables.
-- nmark the number of longitudinal markers
-- K1 Number of nodes and weights for calculating Gaussian quadrature in the first stage.
-- K2 Number of nodes and weights for calculating Gaussian quadrature in the second stage.
-- model a list of the models for the longitudinal part which includes "linear" or "quadratic".
-- Obstime the observed time in longitudinal data
-- ncl the number of nodes to be forked for parallel computing
-- n.chains1 the number of parallel chains for the model in the first stage; default is 1.
-- n.iter1 integer specifying the total number of iterations in the first stage; default is 1000.
-- n.burnin1 integer specifying how many of n.iter to discard as burn-in in the first stage; default is 5000.
-- n.thin1 integer specifying the thinning of the chains in the first stage; default is 1.
-- n.chains2 the number of parallel chains for the model in the second stage; default is 1.
-- n.iter2 integer specifying the total number of iterations in the second stage; default is 1000.
-- n.burnin2 integer specifying how many of n.iter to discard as burn-in in the second stage; default is 5000.
-- n.thin2 integer specifying the thinning of the chains in the second stage; default is 1.
-- simplify Logical; the option for simplifying the use of CS and DS; default is TRUE.
-- DIC Logical; if TRUE (default), compute deviance, pD, and DIC. The rule pD=var(deviance) / 2 is used.
-- quiet Logical, whether to suppress stdout in jags.model().
------------------
-
-As an example, consider the following command, where this implementation has been performed on training data:
-
+Finally, we utilize the TS function, which has been applied to the training data:
 
 ```
-TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
-         nmark = 3, K1 = 15, K2 = 15,
+TS1 <- TS(formFixed, formRandom, formGroup, formSurv,
+         nmark = 4, K1 = 15, K2 = 15,
          model = model, n.chains1 = 1, n.iter1 = 2000, n.burnin1 = 1000,
          n.thin1 = 1,  n.chains2 = 1, n.iter2 = 3000, n.burnin2 = 1000,
-         n.thin2 = 1, Obstime = "obstime", ncl = 3,
+         n.thin2 = 1, Obstime = "obstime", ncl = 2,
          DIC = TRUE, quiet = FALSE, dataLong_t, dataSurv_t
 )
 ```
@@ -118,59 +89,74 @@ TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
 The outputs of this function is as follows: 
 
 ```
-> TS0$Longitudinal
+> TS1$Longitudinal
 [[1]]
 [[1]]$Longitudinal_model
-                     Est          SD       L_CI      U_CI
-(Intercept) -0.003167629 0.051649161 -0.1016439 0.0865190
-obstime      0.651195083 0.024117669  0.6057510 0.6996882
-sigma2_e     0.304434795 0.006494876  0.2912420 0.3178109
-sigma2_b     1.318007024 0.087255212  1.1564923 1.5036663
+                  Est          SD       L_CI      U_CI
+(Intercept) 0.1186460 0.027971557 0.05358023 0.1792465
+obstime     0.6404244 0.036004289 0.56167250 0.7022207
+sigma2      0.2009000 0.004351306 0.19202376 0.2093111
+
+[[1]]$Sigma
+          Intercept      Time
+Intercept  1.073042 0.4470210
+Time       0.447021 0.8869411
 
 
 [[2]]
 [[2]]$Longitudinal_model
-                  Est         SD       L_CI      U_CI
-(Intercept) 0.1079177 0.02551374 0.05766939 0.1556610
-obstime     0.7318347 0.02821918 0.68070271 0.7879759
-sigma2      0.1988282 0.00442706 0.19091613 0.2079220
+                   Est          SD       L_CI      U_CI
+(Intercept) 0.06243818 0.020493833 0.02663963 0.1049948
+obstime     0.51864278 0.044125250 0.42139482 0.5939914
+sigma2      0.19970782 0.004462027 0.19116195 0.2087919
 
 [[2]]$Sigma
           Intercept      Time
-Intercept 1.0611350 0.5255265
-Time      0.5255265 1.0764285
+Intercept 1.0535532 0.5454659
+Time      0.5454659 1.0804504
 
 
 [[3]]
 [[3]]$Longitudinal_model
-                    Est          SD        L_CI        U_CI
-(Intercept) -0.01248891 0.020887352 -0.05146358  0.02923079
-obstime      0.53419759 0.073747348  0.39215866  0.64446072
-obstime2    -0.63622137 0.052401701 -0.70784160 -0.53403394
-sigma2       0.19828364 0.004728854  0.18956590  0.20868304
+                    Est          SD         L_CI        U_CI
+(Intercept) -0.08047871 0.024246694 -0.120527757 -0.02565325
+obstime      0.08538702 0.049140291  0.007382119  0.18494356
+sigma2       0.19739551 0.004319167  0.189187016  0.20599431
 
 [[3]]$Sigma
-           Intercept       Time      Time2
-Intercept  1.0512538  0.5376876 -0.1235974
-Time       0.5376876  1.0998180 -0.2271203
-Time2     -0.1235974 -0.2271203  0.4990175
+          Intercept      Time
+Intercept 1.0911398 0.4644015
+Time      0.4644015 1.1014568
 
 
-> TS0$TDsurvival
+[[4]]
+[[4]]$Longitudinal_model
+                    Est          SD       L_CI         U_CI
+(Intercept) -0.06499082 0.029161950 -0.1171062 -0.005371892
+obstime      0.29497339 0.025756866  0.2449191  0.354918011
+sigma2       0.19357406 0.004277406  0.1857173  0.202200815
+
+[[4]]$Sigma
+          Intercept      Time
+Intercept 1.1100642 0.6453169
+Time      0.6453169 1.1460680
+
+
+> TS1$TDsurvival
 $S_model
-                Est         SD        L_CI        U_CI
-x1       0.27251737 0.14241424 -0.01891624  0.54445881
-x2       0.02010240 0.13661497 -0.25578120  0.27991697
-Marker1 -0.03986755 0.05585649 -0.14893049  0.07103536
-Marker2 -0.27965352 0.05428684 -0.38340941 -0.17559974
-Marker3  0.21850350 0.05160108  0.11619111  0.32225479
-h1       1.05664630 0.19742373  0.71824690  1.49755694
-h2       0.90545060 0.16341794  0.61461051  1.24709989
-h3       1.00960526 0.18004706  0.69618933  1.39670388
-h4       0.97249676 0.17158193  0.67793851  1.33887908
-h5       0.95898814 0.18192923  0.64538832  1.35723983
+                Est         SD        L_CI         U_CI
+x1       0.29541449 0.14038668  0.03089244  0.578761990
+x2       0.02109871 0.12670912 -0.23382368  0.264229926
+Marker1 -0.11169877 0.05780525 -0.22983375 -0.001480224
+Marker2 -0.31113639 0.05081028 -0.41252658 -0.205722528
+Marker3  0.18669627 0.05282661  0.08747509  0.294427578
+Marker4  0.14789465 0.05159023  0.04769651  0.251546871
+h1       1.02437491 0.18043331  0.71654485  1.432232923
+h2       0.87988795 0.15838168  0.59846500  1.219036324
+h3       0.97621759 0.17490050  0.66560180  1.341800893
+h4       0.93385031 0.16009532  0.65304219  1.278264073
+h5       1.00604702 0.18025980  0.69027367  1.389592704
 ```
-
 
 If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criteria are also provided, which helps in checking the convergence of the MCMC.
 
@@ -178,4 +164,93 @@ If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criter
 
 # Dynamic prediction 
 
-For dynamic prediction, we have two functions 
+For dynamic prediction, we offer two functions: DP and DP_CI. The distinction between these two functions lies in their computing approach, as described in the main paper. The first function employs a first-order approximation of dynamic prediction, while the second utilizes Monte Carlo approximation, allowing for the computation of credible intervals.
+
+#### DP function
+The main arguments of this functions are as follows:
+- object an object inheriting from class TS
+-  s the landmark time for prediction
+-  t the window of prediction for prediction
+-  dataLong data set of observed longitudinal variables (validation set).
+-  dataSurv data set of observed survival variables (validation set).
+
+```
+DP <- DP(TS1,
+         s = 0.5, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
+         n.thin = 1,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+```
+
+The outputs of this function is as follows: 
+
+```
+> DP
+$DP
+     id       est
+1     2 0.2976367
+2     3 0.3391111
+3     5 0.5425427
+4    10 0.4484265
+5    11 0.3715304
+6    18 0.4328885
+7    19 0.1572549
+8    22 0.2864214
+9    24 0.2283791
+10   26 0.2647648
+11   28 0.4001724
+.
+.
+.
+114 540 0.3755988
+115 546 0.4698084
+116 573 0.5565222
+117 574 0.3375089
+118 580 0.1553600
+119 597 0.6882316
+120 600 0.6806330
+
+$s
+[1] 0.5
+
+$t
+[1] 0.5
+```
+# Computing AUC and BS for the predictions
+For this purpose, we use DPCri package <https://github.com/tbaghfalaki/DPCri>.
+
+Computing the criteria using this package is straightforward, as demonstrated by the following commands:
+
+- s the landmark time for prediction
+- t the window of prediction for prediction
+- Survt the survival time
+- CR the indicator for competing risks or censoring
+- P the risk predictions
+- cause the main cause for prediction
+
+
+Consider the following command: 
+
+```
+Criteria(
+  s = 0.5, t = 0.5, Survt = dataSurv_v$survtime,
+  CR = dataSurv_v$death, P = DP$DP$est, cause = 1
+)$Cri
+```
+with the following outputs:
+
+```
+       est         sd
+AUC 0.6488860 0.10095338
+BS  0.2177984 0.02648602
+```
+
+The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation.
+
+```
+DP <- DP_CI(TS1,
+         s = 0.1, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
+         n.thin = 1, mi=20,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+```
