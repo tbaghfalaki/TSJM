@@ -175,7 +175,7 @@ The main arguments of this functions are as follows:
 -  dataSurv data set of observed survival variables (validation set).
 
 ```
-DP <- DP(object = TS0,
+DP <- DP(TS1,
          s = 0.5, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
          n.thin = 1,
          DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
@@ -188,28 +188,27 @@ The outputs of this function is as follows:
 > DP
 $DP
      id       est
-1     2 0.4172157
-2     3 0.4085329
-3     5 0.5036053
-4    10 0.3905509
-5    11 0.4036330
-6    18 0.5323239
-7    19 0.1724203
-8    22 0.3148257
-9    24 0.1963160
-10   26 0.2776932
-11   28 0.4662175
-12   32 0.3599169
-13   33 0.3803012
-14   46 0.4364036
+1     2 0.2976367
+2     3 0.3391111
+3     5 0.5425427
+4    10 0.4484265
+5    11 0.3715304
+6    18 0.4328885
+7    19 0.1572549
+8    22 0.2864214
+9    24 0.2283791
+10   26 0.2647648
+11   28 0.4001724
 .
 .
 .
-116 573 0.4714233
-117 574 0.3506668
-118 580 0.1595123
-119 597 0.4564295
-120 600 0.5671340
+114 540 0.3755988
+115 546 0.4698084
+116 573 0.5565222
+117 574 0.3375089
+118 580 0.1553600
+119 597 0.6882316
+120 600 0.6806330
 
 $s
 [1] 0.5
@@ -233,17 +232,17 @@ Computing the criteria using this package is straightforward, as demonstrated by
 Consider the following command: 
 
 ```
-> Criteria(
-+   s = 0.5, t = 0.5, Survt = dataSurv_v$survtime,
-+   CR = dataSurv_v$death, P = DP$DP$est, cause = 1
-+ )$Cri
+Criteria(
+  s = 0.5, t = 0.5, Survt = dataSurv_v$survtime,
+  CR = dataSurv_v$death, P = DP$DP$est, cause = 1
+)$Cri
 ```
 with the following outputs:
 
 ```
-          est        sd
-AUC 0.5852190 0.1047990
-BS  0.2308166 0.0254811
+       est         sd
+AUC 0.6488860 0.10095338
+BS  0.2177984 0.02648602
 ```
 
 
