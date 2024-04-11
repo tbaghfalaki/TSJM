@@ -245,4 +245,12 @@ AUC 0.6488860 0.10095338
 BS  0.2177984 0.02648602
 ```
 
+The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation.
 
+```
+DP <- DP_CI(TS1,
+         s = 0.1, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
+         n.thin = 1, mi=20,
+         DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+```
