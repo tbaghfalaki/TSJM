@@ -246,7 +246,7 @@ AUC 0.6488860 0.10095338
 BS  0.2177984 0.02648602
 ```
 
-The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation.
+The second function is *DP_CI*, which shares the same arguments as *DP*, except for *mi*, which represents the number of multiple imputations for Monte Carlo approximation. Using this function facilitates the computation of credible intervals for each prediction.
 
 ```
 DP <- DP_CI(TS1,
