@@ -8,6 +8,12 @@ To acquire the latest development version of TSJM, you may utilize the following
   # install.packages("devtools")
   devtools::install_github("tbaghfalaki/TSJM")
 ```
+Note: Before installing this package, please install the *parallelsugar* package using the following command:
+
+```
+  # install.packages("devtools")
+  devtools::install_github('nathanvan/parallelsugar')
+```
 This will seamlessly fetch and install the most up-to-date version of TSJM for your use.
 
 ### Example Usage
