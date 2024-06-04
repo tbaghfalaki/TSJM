@@ -164,3 +164,7 @@ cox_model_tsjm <- coxph(Surv(time = tstart, time2 = tstop, endpt) ~ lY1 + lY2 + 
 )
 
 ```
+Note that the estimated standard errors are not valid, so we use the Rubin formula to correct the standard errors of the parameters as follows:
+
+
+
