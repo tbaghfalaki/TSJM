@@ -146,4 +146,21 @@ Time2     -0.2229174 -0.4888390  0.6345375
 
 If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criteria are also provided, which helps in checking the convergence of the MCMC.
 
+So far, only the first stage has been completed. The second stage of our approach will be conducted using the following code, leveraging the outputs from TSC0:
 
+```
+# Merge survival data for modeling
+surv_data <- survival::tmerge(dataSurv_t, dataSurv_t, id = id, endpt = event(survtime, death))
+
+# Merge longitudinal data with survival data
+long.data1 <- survival::tmerge(surv_data, dataLong_t,
+                               id = id, lY1 = tdc(obstime, TSC0$lPredY[, 1]),
+                               lY2 = tdc(obstime, TSC0$lPredY[, 2]), lY3 = tdc(obstime, TSC0$lPredY[, 3])
+)
+
+# Fit a Cox proportional hazards model using the joint model's longitudinal predictions
+cox_model_tsjm <- coxph(Surv(time = tstart, time2 = tstop, endpt) ~ lY1 + lY2 + lY3,
+                        data = long.data1, id = id
+)
+
+```
