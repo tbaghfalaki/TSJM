@@ -290,7 +290,7 @@ A portion of the DP values is as follows:
 > head(DP)
 [1] 0.4064312 0.4514109 0.4375145 0.4432338 0.4403611 0.4450255
 ```
-Finally, the AUC and BS can be estimated as follows:
+Finally, the AUC and BS can be estimated as follows: (For this purpose, we use DPCri package https://github.com/tbaghfalaki/DPCri)
 ```
 # Compute the cumulative risk index (CRI) using the dynamic prediction
 CRI_TSJM = Criteria(s = s, t = Dt, Survt = dataSurv_v$survtime,
