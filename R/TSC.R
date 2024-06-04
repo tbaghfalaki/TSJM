@@ -346,7 +346,7 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 =
     formFixed = formFixed, formRandom = formRandom, formGroup = formGroup, formSurv = formSurv,
     model = model, Obstime = Obstime,
     mu1 = mu1,peice=peice,
-    nmark = nmark, XS = XS, lPredY = lPredY,
-    sim_step1 = results, Longitudinal = Longitudinal, LPredY = LPredY
+    nmark = nmark, XS = XS, lPredY = lPredY, LPredY = LPredY,
+    sim_step1 = results, Longitudinal = Longitudinal
   )
 }
