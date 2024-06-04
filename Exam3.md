@@ -166,5 +166,43 @@ cox_model_tsjm <- coxph(Surv(time = tstart, time2 = tstop, endpt) ~ lY1 + lY2 + 
 ```
 Note that the estimated standard errors are not valid, so we use the Rubin formula to correct the standard errors of the parameters as follows:
 
+```
+# Prepare data for multiple imputation
+surv_data_new <- survival::tmerge(dataSurv_t, dataSurv_t, id = id, endpt = event(survtime, death))
 
+Limp <- 50
+SD2 <- matrix(0, Limp, length(cox_model_tsjm$coefficients))
+TEM <- matrix(0, Limp, length(cox_model_tsjm$coefficients))
+
+# Perform multiple imputation to estimate variability of coefficients
+for (k in 1:Limp) {
+  lPredY <- TSC0$LPredY[[k]]
+  long.data1 <- survival::tmerge(surv_data_new, dataLong_t,
+                                 id = id,
+                                 lY1 = tdc(obstime, lPredY[, 1]),
+                                 lY2 = tdc(obstime, lPredY[, 2]),
+                                 lY3 = tdc(obstime, lPredY[, 3])
+  )
+
+  cox_model <- coxph(Surv(time = tstart, time2 = tstop, endpt) ~ lY1 + lY2 + lY3,
+                     data = long.data1, id = id
+  )
+
+  TEM[k, ] <- summary(cox_model)$coefficients[, 1]
+  SD2[k, ] <- summary(cox_model)$coefficients[, 3]
+}
+
+# Compute the within-imputation variance (Wv) and between-imputation variance (Bv)
+Wv <- apply(SD2^2, 2, mean)
+Bv <- apply(TEM, 2, var)
+sdnew <- sqrt(Wv + (Limp + 1) / Limp * Bv)
+
+# Combine results into a single summary table
+Res <- cbind(cox_model_tsjm$coefficients, sdnew,
+             cox_model_tsjm$coefficients - qnorm(.95) * sdnew,
+             cox_model_tsjm$coefficients + qnorm(.95) * sdnew)
+
+colnames(Res) <- c("coefficients", "sd", "L_CI", "U_CI")
+print(Res)
+```
 
