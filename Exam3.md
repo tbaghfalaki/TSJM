@@ -206,3 +206,11 @@ colnames(Res) <- c("coefficients", "sd", "L_CI", "U_CI")
 print(Res)
 ```
 
+The output is as follows:
+```
+> print(Res)
+    coefficients         sd       L_CI        U_CI
+lY1  -0.02119363 0.05730944 -0.1154593  0.07307201
+lY2  -0.25830696 0.05113144 -0.3424107 -0.17420323
+lY3   0.21784657 0.05268233  0.1311919  0.30450130
+```
