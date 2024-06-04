@@ -19,9 +19,9 @@ Note: Before installing this package, please install the *parallelsugar* package
 ```
 
 ### Example Usage
+We consider two paradigms here. The first one is the full Bayesian approach in which both steps are Bayesian, so the second stage takes longer. Both stages can be easily done using the TSJM package.
 
- > Examples from the TSJM can be found in the following:
-
+Examples from the full Bayesian approach in TSJM can be found in the following:
 - Parameter estimation: This analysis is presented [here](/Exam1.md)
 - Dynamic prediction: This analysis is presented [here](/Exam2.md)
 

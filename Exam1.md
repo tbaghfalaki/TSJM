@@ -49,15 +49,15 @@ formSurv <- survival::Surv(survtime, death) ~ x1 + x2
 We need to choose the model for the marker trend among "intercept," "linear," and "quadratic." For instance, if we consider a covariate $x_1$, the options are as follows:
 
 intercept:
-$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_1+b_{0ki}+\varepsilon_{ikt}$
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_{1i}+b_{0ki}+\varepsilon_{ikt}$
 
 
 linear:
-$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_1+b_{0ki}+b_{1ki} t+\varepsilon_{ikt}$
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}x_{1i}+b_{0ki}+b_{1ki} t+\varepsilon_{ikt}$
 
 
 quadratic:
-$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}t^2+\beta_{3k}x_1+b_{0ki}+b_{1ki} t+b_{1ki} t^2+\varepsilon_{ikt}$
+$Y_{ik}(t)= \beta_{0k}+\beta_{1k}t+\beta_{2k}t^2+\beta_{3k}x_{1i}+b_{0ki}+b_{1ki} t+b_{1ki} t^2+\varepsilon_{ikt}$
 
 
 This has been done by considering the following command:
