@@ -214,3 +214,96 @@ lY1  -0.02119363 0.05730944 -0.1154593  0.07307201
 lY2  -0.25830696 0.05113144 -0.3424107 -0.17420323
 lY3   0.21784657 0.05268233  0.1311919  0.30450130
 ```
+
+## Estimating Dynamic prediction
+
+To perform dynamic prediction (DP) at this stage, we first estimate the random effects and the linear predictors using the LP_v function as follows:
+
+```
+LP_v0 <- LP_v(TSC0,
+              s = 0.5, t = 0.5, n.chains = 1, n.iter = 2000, n.burnin = 1000,
+              n.thin = 1, DIC = TRUE, quiet = FALSE, dataLong = dataLong_v, dataSurv = dataSurv_v
+)
+```
+
+Then try to estimate the values of DP by its formula as mentioned in the paper as follows:
+```
+# Time points for prediction
+s = 0.5
+Dt = 0.5
+
+# Load necessary libraries
+library(dplyr)
+library(DPCri)
+
+# Filter longitudinal data up to time point s
+data_Long_s <- dataLong_v[dataLong_v$obstime <= s, ]
+
+# Add longitudinal predictions to the validation data
+long.data_v <- data_Long_s %>%
+  mutate(lY1 = LP_v0$lPredY[, 1],
+         lY2 = LP_v0$lPredY[, 2],
+         lY3 = LP_v0$lPredY[, 3])
+
+# Prepare survival data for validation
+temp_v <- subset(dataSurv_v, select = c(id, survtime, death))
+pbc21_v <- tmerge(temp_v, temp_v, id = id, endpt = event(survtime, death))
+long.data1_v <- tmerge(pbc21_v, long.data_v, id = id, lY1 = tdc(obstime, lY1),
+                       lY2 = tdc(obstime, lY2), lY3 = tdc(obstime, lY3))
+
+# Extract the baseline hazard function from the Cox model
+base_hazard <- basehaz(cox_model_tsjm, centered = FALSE)
+
+# Estimate cumulative hazard at time s for each individual
+cum_hazard_s <- rep(0, nrow(dataSurv_v))
+for (i in 1:nrow(dataSurv_v)) {
+  individual_data <- long.data1_v[long.data1_v$id == dataSurv_v$id[i] & long.data1_v$tstop <= s, ]
+  if (nrow(individual_data) > 0) {
+    linear_predictor <- sum(coef(cox_model_tsjm) * tail(individual_data[, c("lY1", "lY2", "lY3")], 1))
+    baseline_hazard_s <- base_hazard$hazard[base_hazard$time <= s]
+    cum_hazard_s[i] <- tail(baseline_hazard_s, 1) * exp(linear_predictor)
+  }
+}
+
+# Estimate survival probability at time s
+surv_prob_s <- exp(-cum_hazard_s)
+
+# Estimate cumulative hazard at time s + Dt for each individual
+cum_hazard_sDt <- rep(0, nrow(dataSurv_v))
+for (i in 1:nrow(dataSurv_v)) {
+  individual_data <- long.data1_v[long.data1_v$id == dataSurv_v$id[i] & long.data1_v$tstop <= (s + Dt), ]
+  if (nrow(individual_data) > 0) {
+    linear_predictor <- sum(coef(cox_model_tsjm) * tail(individual_data[, c("lY1", "lY2", "lY3")], 1))
+    baseline_hazard_sDt <- base_hazard$hazard[base_hazard$time <= (s + Dt)]
+    cum_hazard_sDt[i] <- tail(baseline_hazard_sDt, 1) * exp(linear_predictor)
+  }
+}
+
+# Estimate survival probability at time s + Dt
+surv_prob_sDt <- exp(-cum_hazard_sDt)
+
+# Calculate dynamic prediction
+DP = 1 - surv_prob_sDt / surv_prob_s
+```
+A portion of the DP values is as follows:
+```
+> head(DP)
+[1] 0.4064312 0.4514109 0.4375145 0.4432338 0.4403611 0.4450255
+```
+Finally, the AUC and BS can be estimated as follows:
+```
+# Compute the cumulative risk index (CRI) using the dynamic prediction
+CRI_TSJM = Criteria(s = s, t = Dt, Survt = dataSurv_v$survtime,
+                    CR = dataSurv_v$death, P = DP, cause = 1)$Cri[, 1]
+
+# Print the cumulative risk index
+print(CRI_TSJM)
+```
+which are as follows:
+```
+  AUC        BS 
+0.6035758 0.2250287 
+```
+
+
+
