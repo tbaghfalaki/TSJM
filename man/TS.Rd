@@ -124,6 +124,9 @@ formGroup <- list(~id, ~id, ~id)
 formSurv <- survival::Surv(survtime, death) ~ x1 + x2
 model <- list("intercept", "linear", "quadratic")
 
+
+
+
 TS0 <- TS(formFixed, formRandom, formGroup, formSurv,
   nmark = 3, K1 = 15, K2 = 15,
   model = model, n.chains1 = 1, n.iter1 = 2000, n.burnin1 = 1000,
