@@ -19,11 +19,14 @@ Note: Before installing this package, please install the *parallelsugar* package
 ```
 
 ### Example Usage
-We consider two paradigms here. The first one is the full Bayesian approach in which both steps are Bayesian, so the second stage takes longer. Both stages can be easily done using the TSJM package.
-
-Examples from the full Bayesian approach in TSJM can be found in the following:
+We consider two methods here. The first method is the full Bayesian approach, where both stages of the analysis are performed using Bayesian techniques. As a result, the second stage requires more computational time. Both stages can be easily executed using the TSJM package. Examples from the full Bayesian approach in TSJM can be found in the following:
 - Parameter estimation: This analysis is presented [here](/Exam1.md)
 - Dynamic prediction: This analysis is presented [here](/Exam2.md)
+
+The second method uses the Rubin formula to estimate the standard deviation. We apply this approach to solve two examples: 
+- Example 1: Without considring explanatroty variables  [here](/Exam3.md)
+- Example 2: By considring explanatroty variables [here](/Exam4.md)
+
 
 ### Reference 
 Baghfalaki, T., Hashemi, R., Helmer, C. & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
