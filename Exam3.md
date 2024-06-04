@@ -146,7 +146,7 @@ Time2     -0.2229174 -0.4888390  0.6345375
 
 If we consider n.chains1 or n.chains2 > 1, the values of the Gelman-Rubin criteria are also provided, which helps in checking the convergence of the MCMC.
 
-So far, only the first stage has been completed. The second stage of our approach will be conducted using the following code, leveraging the outputs from TSC0:
+So far, only the first stage has been completed. The second stage of our approach will be conducted using the following code, leveraging the outputs from TSC0 by running a proportional hazards model with time-dependent covariates:
 
 ```
 # Merge survival data for modeling
