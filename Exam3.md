@@ -217,7 +217,24 @@ lY3   0.21784657 0.05268233  0.1311919  0.30450130
 
 ## Estimating Dynamic prediction
 
-To perform dynamic prediction (DP) at this stage, we first estimate the random effects and the linear predictors using the LP_v function as follows:
+To perform dynamic prediction (DP) at this stage, we first estimate the random effects and the linear predictors using the LP_v function. 
+
+
+
+- object: an object inheriting from class TSC
+- dataLong: data set of observed longitudinal variables.
+- dataSurv: data set of observed survival variables.
+- s: the landmark time for prediction
+- t: the window of prediction for prediction
+- n.chains: the number of parallel chains for the model; default is 1.
+- n.iter: integer specifying the total number of iterations; default is 1000.
+- n.burnin: integer specifying how many of n.iter to discard as burn-in ; default is 5000.
+- n.thin: integer specifying the thinning of the chains; default is 1.
+- DIC: Logical; if TRUE (default), compute deviance, pD, and DIC. The rule pD=var(deviance) / 2 is used.
+- quiet: Logical, whether to suppress stdout in jags.model().
+-----------------
+
+Here it is as follows:
 
 ```
 LP_v0 <- LP_v(TSC0,
