@@ -651,7 +651,7 @@ Omega<-1/Sigma
   }
 
   ################################### ???
-  n2 <- dim(dataSurv)[1]
+  n2 <- length(unique(id))
   sigma <- c()
   # mu1 <- matrix(0, n2, nmark)
   betaL <- b <- list()
