@@ -14,7 +14,6 @@
 #' @param dataSurv data set of observed survival variables.
 #' @param nmark the number of longitudinal markers
 #' @param K1 Number of nodes and weights for calculating Gaussian quadrature in the first stage.
-#' @param K2 Number of nodes and weights for calculating Gaussian quadrature in the second stage.
 #' @param model a list of the models for the longitudinal part which includes "linear" or "quadratic".
 #' @param Obstime the observed time in longitudinal data
 #' @param ncl the number of nodes to be forked for parallel computing
@@ -46,7 +45,7 @@
 #' @export
 
 
-TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 = K2,
+TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
                 model = model, n.chains1 = n.chains1, n.iter1 = n.iter1, n.burnin1 = floor(n.iter1 / 2),
                 n.thin1 = max(1, floor((n.iter1 - n.burnin1) / 1000)),
                 Obstime = "obstime", ncl = ncl, Limp = 10,
@@ -69,7 +68,6 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1, K2 =
 
   #############
   gamma <- sigma <- c()
-  K <- K2
   X <- Z <- Xv <- Zv <- Nb <- list()
   indB <- indtime <- list()
   for (j in 1:nmark) {
