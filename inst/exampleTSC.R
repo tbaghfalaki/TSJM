@@ -31,7 +31,7 @@ model <- list("intercept", "linear", "quadratic")
 
 # Fit the TSC (Time-Scale Continuous) model
 TSC0 <- TSC(formFixed, formRandom, formGroup, formSurv,
-  nmark = 3, K1 = 15, K2 = 15,
+  nmark = 3, K1 = 15,  
   model = model, n.chains1 = 1, n.iter1 = 500, n.burnin1 = 200,
   n.thin1 = 1,
   Obstime = "obstime", ncl = 2, Limp = 50,
