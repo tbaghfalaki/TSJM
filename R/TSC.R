@@ -13,7 +13,7 @@
 #' @param dataLong data set of observed longitudinal variables.
 #' @param dataSurv data set of observed survival variables.
 #' @param nmark the number of longitudinal markers
-#' @param K1 Number of nodes and weights for calculating Gaussian quadrature in the first stage.
+#' @param K1 Number of nodes and weights for calculating Gaussian quadrature.
 #' @param model a list of the models for the longitudinal part which includes "linear" or "quadratic".
 #' @param Obstime the observed time in longitudinal data
 #' @param ncl the number of nodes to be forked for parallel computing
@@ -62,10 +62,10 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     )
     list(sim = A1$MCMC, PMean = A1$PMean, Long = A1$Estimation)
   }
-
+  
   results <- parallelsugar::mclapply(j, boot_fx, mc.cores = ncl)
-
-
+  
+  
   #############
   gamma <- sigma <- c()
   X <- Z <- Xv <- Zv <- Nb <- list()
@@ -81,14 +81,14 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       mfU <- stats::model.frame(formRandom[[j]], data = data_long) # , na.action = NULL)
       id0 <- as.integer(data_long[all.vars(formGroup[[j]])][, 1])
       n2 <- length(unique(id0))
-
+      
       M <- table(id0)
       id02 <- rep(1:length(M), M)
-
+      
       Obstime <- Obstime
       Xvtime <- cbind(id0, X[[j]][, colnames(X[[j]]) %in% setdiff(colnames(X[[j]]), Obstime)])
       Xv[[j]] <- Xvtime[!duplicated(Xvtime), -1] ### X of data without time and id0 replications
-
+      
       indB[[j]] <- 1:dim(X[[j]])[2]
       indtime[[j]] <- indB[[j]][colnames(X[[j]]) %in% Obstime] # index of time
     }
@@ -98,19 +98,23 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       y <- data_long[all.vars(formFixed[[j]])][, 1]
       data_long <- data_long[is.na(y) == FALSE, ]
       y <- data_long[all.vars(formFixed[[j]])][, 1]
-
+      
       mfX <- stats::model.frame(formFixed[[j]], data = data_long, na.action = NULL)
       X[[j]] <- stats::model.matrix(formFixed[[j]], mfX, na.action = NULL)
       mfU <- stats::model.frame(formRandom[[j]], data = data_long, na.action = NULL)
       Z[[j]] <- stats::model.matrix(formRandom[[j]], mfU, na.action = NULL)
       id0 <- as.integer(data_long[all.vars(formGroup[[j]])][, 1])
-
+      
+      M <- table(id0)
+      id02 <- rep(1:length(M), M)
+      
+      
       n2 <- length(unique(id0))
       Nb[[j]] <- dim(Z[[j]])[2]
       Obstime <- Obstime
       Xvtime <- cbind(id0, X[[j]][, colnames(X[[j]]) %in% setdiff(colnames(X[[j]]), Obstime)])
       Xv[[j]] <- Xvtime[!duplicated(Xvtime), -1]
-
+      
       indB[[j]] <- 1:dim(X[[j]])[2]
       indtime[[j]] <- indB[[j]][colnames(X[[j]]) %in% Obstime] # index of time
     }
@@ -120,51 +124,53 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       y <- data_long[all.vars(formFixed[[j]])][, 1]
       data_long <- data_long[is.na(y) == FALSE, ]
       y <- data_long[all.vars(formFixed[[j]])][, 1]
-
-
+      
+      
       mfX <- stats::model.frame(formFixed[[j]], data = data_long, na.action = NULL)
       X[[j]] <- stats::model.matrix(formFixed[[j]], mfX, na.action = NULL)
       mfU <- stats::model.frame(formRandom[[j]], data = data_long, na.action = NULL)
       Z[[j]] <- stats::model.matrix(formRandom[[j]], mfU, na.action = NULL)
-
-
+      
+      
       colnamesmfX <- colnames(X[[j]])
       colnamesmfU <- colnames(Z[[j]])
       Obstime <- Obstime
-
+      
       Xtime2 <- mfX[, Obstime]^2
-
+      
       X[[j]] <- cbind(X[[j]], Xtime2)
       colnames(X[[j]]) <- c(colnamesmfX, "obstime2")
       Z[[j]] <- cbind(Z[[j]], Xtime2)
       colnames(Z[[j]]) <- c(colnamesmfU, "obstime2")
       Obstime2 <- "obstime2"
-
+      
       id0 <- as.integer(data_long[all.vars(formGroup[[j]])][, 1])
-
-
+      
+      M <- table(id0)
+      id02 <- rep(1:length(M), M)
+      
       n2 <- length(unique(id0))
       Nb[[j]] <- dim(Z[[j]])[2]
-
+      
       Obstime2n <- c(Obstime, Obstime2)
       Xvtime <- cbind(id0, X[[j]][, colnames(X[[j]]) %in% setdiff(colnames(X[[j]]), Obstime2n)])
       Xv[[j]] <- Xvtime[!duplicated(Xvtime), -1] ### X of data without time and id0 replications
-
-
+      
+      
       indB[[j]] <- 1:dim(X[[j]])[2]
       indtime[[j]] <- indB[[j]][colnames(X[[j]]) %in% Obstime2n] # index of time
     }
   }
   ##########
   n <- length(id0)
-
+  
   tmp <- dataSurv[all.vars(formSurv)]
   Time <- tmp[all.vars(formSurv)][, 1] # matrix of observed time such as Time=min(Tevent,Tcens)
   Death <- tmp[all.vars(formSurv)][, 2] # vector of event indicator (delta)
   nTime <- length(Time) # number of subject having Time
   peice <- quantile(Time, seq(.2, 0.8, length = 4))
-
-   # design matrice
+  
+  # design matrice
   suppressWarnings({
     mfZ <- stats::model.frame(formSurv, data = tmp, na.action = NULL)
   })
@@ -181,7 +187,7 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     mu1[, j] <- results[[j]]$PMean$linearpred
     b[[j]] <- results[[j]]$PMean$b
   }
-
+  
   indtime <- nindtime <- list()
   for (j in 1:nmark) {
     indB <- 1:dim(X[[j]])[2]
@@ -196,8 +202,8 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     }
     nindtime[[j]] <- c(1:dim(X[[j]])[2])[-indtime[[j]]]
   }
-
-
+  
+  
   Lp1 <- Lp2 <- Lp3 <- matrix(0, n2, nmark)
   for (i in 1:n2) {
     for (j in 1:nmark) {
@@ -220,12 +226,12 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
         Lp2[i, j] <- betaL[[j]][indtime[[j]][1]]
       }
       Lp3[i, j] <- 0
-
-
+      
+      
       if (model[[j]] == "quadratic") (Lp3[i, j] <- betaL[[j]][indtime[[j]][2]] + b[[j]][i, 3])
     }
   }
-
+  
   LP1 <- matrix(rep(Lp1[1, ], M[1]), ncol = ncol(Lp1), byrow = TRUE)
   LP2 <- matrix(rep(Lp2[1, ], M[1]), ncol = ncol(Lp2), byrow = TRUE)
   LP3 <- matrix(rep(Lp3[1, ], M[1]), ncol = ncol(Lp3), byrow = TRUE)
@@ -234,14 +240,14 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     LP2 <- rbind(LP2, matrix(rep(Lp2[i, ], M[i]), ncol = ncol(Lp2), byrow = TRUE))
     LP3 <- rbind(LP3, matrix(rep(Lp3[i, ], M[i]), ncol = ncol(Lp3), byrow = TRUE))
   }
-
+  
   lPredY <- LP1 + LP2 * data_long[, Obstime] + LP3 * data_long[, Obstime]^2
-
+  
   ###################################
   indexchain <- 1:length(results[[1]]$sim$sigma)
-
+  
   samplec <- sample(indexchain, Limp)
-
+  
   n2 <- dim(dataSurv)[1]
   LPredY <- list()
   rrr <- 0
@@ -250,19 +256,19 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     gamma <- sigma <- c()
     mu1 <- matrix(0, n2, nmark)
     betaL <- b <- list()
-
+    
     for (j in 1:nmark) {
       betaL[[j]] <- results[[j]]$sim$beta[samplec1, ]
       gamma <- append(gamma, results[[j]]$sim$alpha[samplec1])
       sigma <- append(sigma, results[[j]]$sim$sigma[samplec1])
-
+      
       if (is.matrix(results[[j]]$sim$b) == TRUE) {
         b[[j]] <- results[[j]]$sim$b[samplec1, ]
       } else {
         b[[j]] <- results[[j]]$sim$b[samplec1, , ]
       }
     }
-
+    
     indtime <- nindtime <- list()
     for (j in 1:nmark) {
       indB <- 1:dim(X[[j]])[2]
@@ -277,8 +283,8 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       }
       nindtime[[j]] <- c(1:dim(X[[j]])[2])[-indtime[[j]]]
     }
-
-
+    
+    
     Lp1 <- Lp2 <- Lp3 <- matrix(0, n2, nmark)
     for (i in 1:n2) {
       for (j in 1:nmark) {
@@ -301,12 +307,12 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
           Lp2[i, j] <- betaL[[j]][indtime[[j]][1]]
         }
         Lp3[i, j] <- 0
-
-
+        
+        
         if (model[[j]] == "quadratic") (Lp3[i, j] <- betaL[[j]][indtime[[j]][2]] + b[[j]][i, 3])
       }
     }
-
+    
     LP1 <- matrix(rep(Lp1[1, ], M[1]), ncol = ncol(Lp1), byrow = TRUE)
     LP2 <- matrix(rep(Lp2[1, ], M[1]), ncol = ncol(Lp2), byrow = TRUE)
     LP3 <- matrix(rep(Lp3[1, ], M[1]), ncol = ncol(Lp3), byrow = TRUE)
@@ -315,31 +321,31 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       LP2 <- rbind(LP2, matrix(rep(Lp2[i, ], M[i]), ncol = ncol(Lp2), byrow = TRUE))
       LP3 <- rbind(LP3, matrix(rep(Lp3[i, ], M[i]), ncol = ncol(Lp3), byrow = TRUE))
     }
-
+    
     lPredY1 <- LP1 + LP2 * data_long[, Obstime] + LP3 * data_long[, Obstime]^2
-
+    
     LPredY[[rrr]] <- lPredY1
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   Longitudinal <- list()
   for (j in 1:nmark) {
     Longitudinal[[j]] <- results[[j]]$Long
   }
-
-
+  
+  
   list(
     formFixed = formFixed, formRandom = formRandom, formGroup = formGroup, formSurv = formSurv,
     model = model, Obstime = Obstime,
