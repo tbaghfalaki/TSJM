@@ -29,4 +29,4 @@ The second method uses the Rubin formula to estimate the standard deviation. We 
 
 
 ### Reference 
-Baghfalaki, T., Hashemi, R., Helmer, C. & Jacqmin-Gadda, H. (2024). A Two-stage Joint Modeling Approach for Multiple Longitudinal Markers and Time-to-event Data. Submitted.
+Baghfalaki, T., Hashemi, R., Helmer, C., & Jacqmin-Gadda, H. (2024). A two-stage joint modeling approach for multiple longitudinal markers and time-to-event data. arXiv preprint arXiv:2412.05765.
