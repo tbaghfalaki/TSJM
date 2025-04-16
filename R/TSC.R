@@ -70,6 +70,7 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
   gamma <- sigma <- c()
   X <- Z <- Xv <- Zv <- Nb <- list()
   indB <- indtime <- list()
+  Mi=matrix(0,nmark,n2)
   for (j in 1:nmark) {
     if (model[[j]] == "intercept") {
       data_long <- dataLong[unique(c(all.vars(formGroup[[j]]), all.vars(formFixed[[j]]), all.vars(formRandom[[j]])))]
@@ -160,6 +161,7 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
       indB[[j]] <- 1:dim(X[[j]])[2]
       indtime[[j]] <- indB[[j]][colnames(X[[j]]) %in% Obstime2n] # index of time
     }
+    Mi[j,]=M
   }
   ##########
   n <- length(id0)
@@ -232,16 +234,16 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
     }
   }
   
-  LP1 <- matrix(rep(Lp1[1, ], M[1]), ncol = ncol(Lp1), byrow = TRUE)
-  LP2 <- matrix(rep(Lp2[1, ], M[1]), ncol = ncol(Lp2), byrow = TRUE)
-  LP3 <- matrix(rep(Lp3[1, ], M[1]), ncol = ncol(Lp3), byrow = TRUE)
+  LP1 <- matrix(rep(Lp1[1, ], max(Mi[,1])), ncol = ncol(Lp1), byrow = TRUE)
+  LP2 <- matrix(rep(Lp2[1, ], max(Mi[,1])), ncol = ncol(Lp2), byrow = TRUE)
+  LP3 <- matrix(rep(Lp3[1, ], max(Mi[,1])), ncol = ncol(Lp3), byrow = TRUE)
   for (i in 2:n2) {
-    LP1 <- rbind(LP1, matrix(rep(Lp1[i, ], M[i]), ncol = ncol(Lp1), byrow = TRUE))
-    LP2 <- rbind(LP2, matrix(rep(Lp2[i, ], M[i]), ncol = ncol(Lp2), byrow = TRUE))
-    LP3 <- rbind(LP3, matrix(rep(Lp3[i, ], M[i]), ncol = ncol(Lp3), byrow = TRUE))
+    LP1 <- rbind(LP1, matrix(rep(Lp1[i, ], max(Mi[,i])), ncol = ncol(Lp1), byrow = TRUE))
+    LP2 <- rbind(LP2, matrix(rep(Lp2[i, ], max(Mi[,i])), ncol = ncol(Lp2), byrow = TRUE))
+    LP3 <- rbind(LP3, matrix(rep(Lp3[i, ], max(Mi[,i])), ncol = ncol(Lp3), byrow = TRUE))
   }
   
-  lPredY <- LP1 + LP2 * data_long[, Obstime] + LP3 * data_long[, Obstime]^2
+  lPredY <- LP1 + LP2 * dataLong[, Obstime] + LP3 * dataLong[, Obstime]^2
   
   ###################################
   indexchain <- 1:length(results[[1]]$sim$sigma)
