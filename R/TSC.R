@@ -70,6 +70,11 @@ TSC <- function(formFixed, formRandom, formGroup, formSurv, nmark, K1 = K1,
   gamma <- sigma <- c()
   X <- Z <- Xv <- Zv <- Nb <- list()
   indB <- indtime <- list()
+
+
+id0 <- as.integer(data_long[all.vars(formGroup[[1]])][, 1])
+      n2 <- length(unique(id0))
+  
   Mi=matrix(0,nmark,n2)
   for (j in 1:nmark) {
     if (model[[j]] == "intercept") {
